@@ -20,6 +20,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    import traceback
+    from fastapi.responses import JSONResponse
+    origin = request.headers.get("origin", "*")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Server processing error: {str(exc)}"},
+        headers={
+            "access-control-allow-origin": origin,
+            "access-control-allow-credentials": "true",
+            "access-control-allow-headers": "*",
+            "access-control-allow-methods": "*",
+        }
+    )
+
 app.include_router(router)
 
 frontend_dist_env = os.environ.get("FRONTEND_DIST", "/app/frontend/dist")

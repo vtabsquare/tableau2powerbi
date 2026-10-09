@@ -6,7 +6,9 @@ import hashlib
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
-import requests
+import urllib.request
+import urllib.parse
+import urllib.error
 
 from app.core.config import settings
 from app.core.audit_logger import log_event
@@ -108,20 +110,30 @@ def send_otp_via_brevo(email: str, otp: str) -> dict[str, Any]:
     }
 
     try:
-        resp = requests.post(BREVO_API_URL, json=payload, headers=headers, timeout=10)
-        if resp.status_code in (200, 201, 202):
-            log_event("EMAIL_OTP_SENT", user_id=email, status="SUCCESS")
-            return {"success": True, "message": "Email sent successfully"}
-        
-        # Log error details if Brevo rejected request
-        resp_json = resp.json() if resp.text else {}
-        err_msg = resp_json.get("message", resp.text)
-        log_event("EMAIL_OTP_FAILED", user_id=email, status="FAILED", details={"error": err_msg, "status_code": resp.status_code})
+        req = urllib.request.Request(
+            BREVO_API_URL,
+            data=json.dumps(payload).encode("utf-8"),
+            headers=headers,
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status in (200, 201, 202):
+                log_event("EMAIL_OTP_SENT", user_id=email, status="SUCCESS")
+                return {"success": True, "message": "Email sent successfully"}
+    except urllib.error.HTTPError as err:
+        err_body = err.read().decode("utf-8", errors="replace")
+        err_msg = err_body
+        try:
+            err_json = json.loads(err_body)
+            err_msg = err_json.get("message", err_body)
+        except Exception:
+            pass
+        log_event("EMAIL_OTP_FAILED", user_id=email, status="FAILED", details={"error": err_msg, "status_code": err.code})
         return {
             "success": False,
             "error": err_msg,
-            "status_code": resp.status_code,
-            "dev_otp": otp  # Returned in response for testing if Brevo IP whitelist is pending
+            "status_code": err.code,
+            "dev_otp": otp
         }
     except Exception as exc:
         log_event("EMAIL_OTP_EXCEPTION", user_id=email, status="FAILED", details={"error": str(exc)})
@@ -135,17 +147,18 @@ def get_user(email: str) -> dict[str, Any] | None:
     # Try Supabase if key is configured
     if SUPABASE_URL and SUPABASE_KEY:
         try:
-            url = f"{SUPABASE_URL}/rest/v1/app_users?email=eq.{email_clean}&select=*"
+            url = f"{SUPABASE_URL}/rest/v1/app_users?email=eq.{urllib.parse.quote(email_clean)}&select=*"
             headers = {
                 "apikey": SUPABASE_KEY,
                 "Authorization": f"Bearer {SUPABASE_KEY}",
                 "accept": "application/json"
             }
-            res = requests.get(url, headers=headers, timeout=5)
-            if res.status_code == 200:
-                rows = res.json()
-                if isinstance(rows, list) and len(rows) > 0:
-                    return rows[0]
+            req = urllib.request.Request(url, headers=headers, method="GET")
+            with urllib.request.urlopen(req, timeout=5) as res:
+                if res.status == 200:
+                    rows = json.loads(res.read().decode("utf-8"))
+                    if isinstance(rows, list) and len(rows) > 0:
+                        return rows[0]
         except Exception:
             pass
 
@@ -179,7 +192,13 @@ def upsert_user(email: str, fields: dict[str, Any]) -> dict[str, Any]:
                 "Content-Type": "application/json",
                 "Prefer": "resolution=merge-duplicates"
             }
-            requests.post(url, json=[user], headers=headers, timeout=5)
+            req = urllib.request.Request(
+                url,
+                data=json.dumps([user], default=str).encode("utf-8"),
+                headers=headers,
+                method="POST"
+            )
+            urllib.request.urlopen(req, timeout=5)
         except Exception:
             pass
 
