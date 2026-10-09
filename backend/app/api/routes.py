@@ -63,16 +63,21 @@ def register_request(payload: RegisterRequest):
     })
 
     brevo_res = send_otp_via_brevo(email_clean, otp)
-    msg = "A 6-digit verification code has been sent to your email."
-    if not brevo_res.get("success") and "unrecognised IP address" in str(brevo_res.get("error")):
-        msg = "OTP generated. (Notice: Brevo requires authorizing your IP at https://app.brevo.com/security/authorised_ips)"
+    if brevo_res.get("success"):
+        msg = f"A 6-digit verification code has been sent to your email ({email_clean})."
+    else:
+        err = str(brevo_res.get("error", ""))
+        if "unrecognised IP address" in err:
+            msg = "OTP generated. (Notice: Brevo requires authorizing your IP at https://app.brevo.com/security/authorised_ips)"
+        else:
+            msg = f"OTP generated. (Notice: Brevo email status - {err or 'Delivery pending'})"
 
     return {
         "status": "success",
         "message": msg,
         "email": email_clean,
         "brevo_sent": brevo_res.get("success", False),
-        "dev_otp": brevo_res.get("dev_otp")
+        "dev_otp": otp
     }
 
 

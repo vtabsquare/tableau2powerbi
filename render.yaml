@@ -21,6 +21,8 @@ services:
         sync: false
       - key: BREVO_API_KEY
         sync: false
+      - key: BREVO_SENDER_EMAIL
+        value: sanjay.vtab@gmail.com
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY

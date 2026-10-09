@@ -16,7 +16,7 @@ from app.core.audit_logger import log_event
 # Configuration defaults
 BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
-BREVO_SENDER_EMAIL = os.environ.get("BREVO_SENDER_EMAIL", "balamuraleee@gmail.com")
+BREVO_SENDER_EMAIL = os.environ.get("BREVO_SENDER_EMAIL", "sanjay.vtab@gmail.com")
 BREVO_SENDER_NAME = os.environ.get("BREVO_SENDER_NAME", "TABLEAU2PBI Workbench")
 
 SUPABASE_URL = (os.environ.get("SUPABASE_URL") or "https://tdljizujlzbylsvdbjtu.supabase.co").rstrip("/")
@@ -75,7 +75,11 @@ def send_otp_via_brevo(email: str, otp: str) -> dict[str, Any]:
     """Send 6-digit verification OTP email using Brevo REST API."""
     if not BREVO_API_KEY:
         log_event("EMAIL_OTP_SKIPPED", user_id=email, status="WARNING", details={"reason": "BREVO_API_KEY not configured"})
-        return {"success": False, "error": "BREVO_API_KEY is not configured.", "dev_otp": otp}
+        return {
+            "success": False,
+            "error": "BREVO_API_KEY is not configured. Please add BREVO_API_KEY in Render Dashboard -> Environment.",
+            "dev_otp": otp
+        }
     payload = {
         "sender": {
             "name": BREVO_SENDER_NAME,
@@ -106,7 +110,8 @@ def send_otp_via_brevo(email: str, otp: str) -> dict[str, Any]:
     headers = {
         "api-key": BREVO_API_KEY,
         "content-type": "application/json",
-        "accept": "application/json"
+        "accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     }
 
     try:
