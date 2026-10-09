@@ -27,11 +27,9 @@ services:
         sync: false
 
   # Frontend Static Site (React + Vite)
-  - type: web
+  - type: static
     name: tableau2pbi-frontend
-    runtime: static
     rootDir: frontend
-    plan: free
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     routes:
