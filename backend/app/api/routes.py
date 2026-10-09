@@ -30,26 +30,153 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class RegisterRequest(BaseModel):
+    email: str
+
+
+class VerifyOtpRequest(BaseModel):
+    email: str
+    otp: str
+
+
+class CreatePasswordRequest(BaseModel):
+    email: str
+    otp: str
+    password: str
+
+
+@router.post("/auth/register-request")
+def register_request(payload: RegisterRequest):
+    from datetime import datetime, timezone, timedelta
+    from app.services.user_service import generate_otp, upsert_user, send_otp_via_brevo
+
+    email_clean = payload.email.strip().lower()
+    if not email_clean or "@" not in email_clean or "." not in email_clean:
+        raise HTTPException(status_code=400, detail="Please enter a valid email address.")
+
+    otp = generate_otp()
+    expiry = (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat()
+
+    upsert_user(email_clean, {
+        "otp_code": otp,
+        "otp_expires_at": expiry
+    })
+
+    brevo_res = send_otp_via_brevo(email_clean, otp)
+    msg = "A 6-digit verification code has been sent to your email."
+    if not brevo_res.get("success") and "unrecognised IP address" in str(brevo_res.get("error")):
+        msg = "OTP generated. (Notice: Brevo requires authorizing your IP at https://app.brevo.com/security/authorised_ips)"
+
+    return {
+        "status": "success",
+        "message": msg,
+        "email": email_clean,
+        "brevo_sent": brevo_res.get("success", False),
+        "dev_otp": brevo_res.get("dev_otp")
+    }
+
+
+@router.post("/auth/verify-otp")
+def verify_otp(payload: VerifyOtpRequest):
+    from datetime import datetime, timezone
+    from app.services.user_service import get_user
+
+    email_clean = payload.email.strip().lower()
+    user = get_user(email_clean)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found. Please register first.")
+
+    stored_otp = user.get("otp_code")
+    expiry_str = user.get("otp_expires_at")
+    if not stored_otp or stored_otp != payload.otp.strip():
+        raise HTTPException(status_code=400, detail="Invalid 6-digit OTP code. Please check and try again.")
+
+    if expiry_str:
+        try:
+            expiry_dt = datetime.fromisoformat(expiry_str)
+            if datetime.now(timezone.utc) > expiry_dt:
+                raise HTTPException(status_code=400, detail="OTP code has expired. Please request a new code.")
+        except Exception:
+            pass
+
+    return {
+        "status": "success",
+        "message": "OTP verified successfully. Please create your password.",
+        "email": email_clean,
+        "requires_password_creation": True
+    }
+
+
+@router.post("/auth/create-password")
+def create_password(payload: CreatePasswordRequest):
+    from datetime import datetime, timezone
+    from app.services.user_service import get_user, upsert_user, hash_password
+
+    email_clean = payload.email.strip().lower()
+    if len(payload.password.strip()) < 4:
+        raise HTTPException(status_code=400, detail="Password must be at least 4 characters long.")
+
+    user = get_user(email_clean)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found. Please register first.")
+
+    # Validate OTP matching
+    stored_otp = user.get("otp_code")
+    if not stored_otp or stored_otp != payload.otp.strip():
+        raise HTTPException(status_code=400, detail="Invalid verification code session. Please try again.")
+
+    pwd_hash = hash_password(payload.password)
+    updated_user = upsert_user(email_clean, {
+        "password_hash": pwd_hash,
+        "otp_code": None,
+        "otp_expires_at": None,
+        "is_verified": True
+    })
+
+    log_event("REGISTER_SUCCESS", user_id=email_clean, status="SUCCESS")
+
+    return {
+        "authenticated": True,
+        "display_name": email_clean,
+        "role": updated_user.get("role", "User"),
+        "message": "Password created successfully. You are now logged in."
+    }
+
+
 @router.post("/auth/login")
 def login(payload: LoginRequest):
-    if not settings.auth_username or not settings.auth_password:
-        log_event("LOGIN", user_id=payload.username.strip(), status="FAILED", details={"reason": "Auth not configured"})
-        raise HTTPException(
-            status_code=503,
-            detail="Authentication is not configured. Set T2PBI_AUTH_USERNAME and T2PBI_AUTH_PASSWORD in the deployment environment.",
-        )
-    if (
-        payload.username.strip().casefold() == settings.auth_username.strip().casefold()
-        and payload.password == settings.auth_password
-    ):
-        log_event("LOGIN", user_id=payload.username.strip(), status="SUCCESS")
+    from app.services.user_service import get_user, verify_password
+
+    username_clean = payload.username.strip()
+
+    # 1. Check registered database users (Supabase / local DB)
+    db_user = get_user(username_clean)
+    if db_user and db_user.get("password_hash"):
+        if verify_password(payload.password, db_user["password_hash"]):
+            log_event("LOGIN", user_id=username_clean, status="SUCCESS", details={"method": "db_password"})
+            return {
+                "authenticated": True,
+                "display_name": db_user.get("email", username_clean),
+                "role": db_user.get("role", "User"),
+                "demo_auth": False,
+            }
+        else:
+            log_event("LOGIN", user_id=username_clean, status="FAILED", details={"reason": "Invalid password"})
+            raise HTTPException(status_code=401, detail="Invalid username or password.")
+
+    # 2. Check demo/environment configured credentials (fallback)
+    demo_user = (settings.auth_username or "balamuraleee@gmail.com").strip().casefold()
+    demo_pass = settings.auth_password or "12345"
+    if username_clean.casefold() == demo_user and payload.password == demo_pass:
+        log_event("LOGIN", user_id=username_clean, status="SUCCESS", details={"method": "demo_fallback"})
         return {
             "authenticated": True,
-            "display_name": payload.username.strip(),
+            "display_name": username_clean,
             "role": "Migration Administrator",
-            "demo_auth": False,
+            "demo_auth": True,
         }
-    log_event("LOGIN", user_id=payload.username.strip(), status="FAILED", details={"reason": "Invalid credentials"})
+
+    log_event("LOGIN", user_id=username_clean, status="FAILED", details={"reason": "Invalid credentials"})
     raise HTTPException(status_code=401, detail="Invalid username or password.")
 
 

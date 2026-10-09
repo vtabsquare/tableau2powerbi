@@ -120,6 +120,33 @@ export async function login(username: string, password: string): Promise<{authen
   return asJson(response);
 }
 
+export async function registerRequest(email: string): Promise<{status: string; message: string; email: string; dev_otp?: string}> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/register-request`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({email})
+  });
+  return asJson(response);
+}
+
+export async function verifyOtp(email: string, otp: string): Promise<{status: string; message: string; email: string; requires_password_creation: boolean}> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({email, otp})
+  });
+  return asJson(response);
+}
+
+export async function createPassword(email: string, otp: string, password: string): Promise<{authenticated: boolean; display_name: string; role: string; message: string}> {
+  const response = await fetch(`${API_BASE_URL}/api/auth/create-password`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({email, otp, password})
+  });
+  return asJson(response);
+}
+
 export async function deleteProject(projectId: string): Promise<{deleted: boolean; project_id: string; message: string}> {
   await assertTableauBackend();
   const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, { method: 'DELETE' });
