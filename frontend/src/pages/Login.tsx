@@ -1,6 +1,6 @@
 import { FormEvent, useState } from 'react';
-import { DatabaseZap, LockKeyhole, ShieldCheck, Mail, KeyRound, UserPlus, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { login, registerRequest, verifyOtp, createPassword } from '../services/api';
+import { DatabaseZap, LockKeyhole, ShieldCheck, Mail, KeyRound, UserPlus, ArrowLeft, CheckCircle2, Settings, RefreshCw } from 'lucide-react';
+import { login, registerRequest, verifyOtp, createPassword, getApiBaseUrl, setCustomApiBaseUrl, testBackendConnection } from '../services/api';
 
 type AuthMode = 'SIGN_IN' | 'REGISTER_EMAIL' | 'VERIFY_OTP' | 'CREATE_PASSWORD';
 
@@ -16,6 +16,110 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  // Backend URL discovery and troubleshooting state
+  const [apiUrl, setApiUrl] = useState(() => getApiBaseUrl());
+  const [showSettings, setShowSettings] = useState(false);
+  const [customUrlInput, setCustomUrlInput] = useState(() => getApiBaseUrl());
+  const [testingConn, setTestingConn] = useState(false);
+  const [connResult, setConnResult] = useState<{ ok: boolean; message: string; version?: string } | null>(null);
+
+  async function handleTestConnection() {
+    setTestingConn(true);
+    setConnResult(null);
+    try {
+      const res = await testBackendConnection();
+      setConnResult(res);
+    } finally {
+      setTestingConn(false);
+    }
+  }
+
+  function handleSaveUrl() {
+    setCustomApiBaseUrl(customUrlInput);
+    const updated = getApiBaseUrl();
+    setApiUrl(updated);
+    setConnResult({ ok: true, message: `Backend URL saved: ${updated}` });
+  }
+
+  function handleResetUrl() {
+    setCustomApiBaseUrl(null);
+    const def = getApiBaseUrl();
+    setCustomUrlInput(def);
+    setApiUrl(def);
+    setConnResult({ ok: true, message: `Reset to default: ${def}` });
+  }
+
+  const serverConfigFooter = (
+    <div style={{ marginTop: 18, borderTop: '1px solid #e2e8f0', paddingTop: 10, textAlign: 'center', fontSize: 12, color: '#64748b' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
+        <span>Backend: <code style={{ fontSize: 11, background: '#f1f5f9', padding: '2px 6px', borderRadius: 4, color: '#0f172a' }}>{apiUrl}</code></span>
+        <button
+          type="button"
+          onClick={() => { setShowSettings(!showSettings); setConnResult(null); }}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#2563eb',
+            fontSize: 11,
+            cursor: 'pointer',
+            padding: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 3,
+            textDecoration: 'underline'
+          }}
+        >
+          <Settings size={12} /> {showSettings ? 'Hide' : 'Server Settings'}
+        </button>
+      </div>
+
+      {showSettings && (
+        <div style={{ marginTop: 10, textAlign: 'left', background: '#f8fafc', padding: '10px 12px', borderRadius: 6, border: '1px solid #cbd5e1' }}>
+          <label style={{ fontSize: 11, fontWeight: 600, color: '#334155', display: 'block', marginBottom: 4 }}>
+            Backend API Base URL:
+            <input
+              type="text"
+              value={customUrlInput}
+              onChange={(e) => setCustomUrlInput(e.target.value)}
+              placeholder="https://tableau2pbi-backend.onrender.com"
+              style={{ fontSize: 12, padding: '6px 8px', width: '100%', marginTop: 4, boxSizing: 'border-box' }}
+            />
+          </label>
+          <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={handleSaveUrl}
+              style={{ fontSize: 11, padding: '4px 10px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+            >
+              Save URL
+            </button>
+            <button
+              type="button"
+              disabled={testingConn}
+              onClick={handleTestConnection}
+              style={{ fontSize: 11, padding: '4px 10px', background: '#e2e8f0', color: '#1e293b', border: 'none', borderRadius: 4, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+            >
+              <RefreshCw size={11} />
+              {testingConn ? 'Testing...' : 'Test Connection'}
+            </button>
+            <button
+              type="button"
+              onClick={handleResetUrl}
+              style={{ fontSize: 11, padding: '4px 8px', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}
+            >
+              Reset
+            </button>
+          </div>
+          {connResult && (
+            <div style={{ marginTop: 8, fontSize: 11, color: connResult.ok ? '#15803d' : '#b91c1c', fontWeight: 500, lineHeight: 1.4 }}>
+              {connResult.ok ? '✅ ' : '❌ '} {connResult.message}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 
   // 1. Submit existing user login
   async function submitLogin(e: FormEvent) {
@@ -177,6 +281,8 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
           <div className="demoWarning" style={{ textAlign: 'center', marginTop: 14 }}>
             Demo credentials (balamuraleee@gmail.com / 12345) or registered Supabase credentials accepted.
           </div>
+
+          {serverConfigFooter}
         </form>
       )}
 
@@ -191,7 +297,7 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
             Enter your email to receive a 6-digit verification OTP via Brevo.
           </p>
 
-          {error && <div className="error" style={{ marginBottom: 12 }}>{error}</div>}
+          {error && <div className="error" style={{ marginBottom: 14, fontSize: 13, lineHeight: 1.45, padding: '10px 12px', borderRadius: 8 }}>{error}</div>}
 
           <label>
             Work or Personal Email
@@ -226,6 +332,8 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
               Back to Sign in
             </button>
           </div>
+
+          {serverConfigFooter}
         </form>
       )}
 
@@ -288,6 +396,8 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
               Cancel
             </button>
           </div>
+
+          {serverConfigFooter}
         </form>
       )}
 
@@ -302,7 +412,7 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
             OTP verified! Set a password for future logins with <b>{regEmail}</b>.
           </p>
 
-          {error && <div className="error" style={{ marginBottom: 12 }}>{error}</div>}
+          {error && <div className="error" style={{ marginBottom: 14, fontSize: 13, lineHeight: 1.45, padding: '10px 12px', borderRadius: 8 }}>{error}</div>}
 
           <label>
             New Password
@@ -330,6 +440,8 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
           <button className="primary loginButton" disabled={busy} type="submit">
             {busy ? 'Saving & Signing in...' : 'Set Password & Enter Workbench'}
           </button>
+
+          {serverConfigFooter}
         </form>
       )}
     </div>

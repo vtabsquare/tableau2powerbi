@@ -21,7 +21,7 @@ def _default_storage_root() -> Path:
 def _default_cors_origin_regex() -> str:
     return os.environ.get(
         "CORS_ORIGIN_REGEX",
-        r"https?://(localhost|127\.0\.0\.1):\d+|https://[a-zA-Z0-9-]+\.onrender\.com",
+        r".*",
     )
 
 

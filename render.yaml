@@ -39,7 +39,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        fromService:
-          type: web
-          name: tableau2pbi-backend
-          property: host
+        value: https://tableau2pbi-backend.onrender.com
