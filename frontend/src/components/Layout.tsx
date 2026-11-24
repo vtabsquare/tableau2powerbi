@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect, useRef } from 'react';
 import { 
-  DatabaseZap, ShieldCheck, ArrowUp, ArrowRight, LogOut, Search, HelpCircle, Bell, User,
+  DatabaseZap, ShieldCheck, ArrowUp, ArrowRight, LogOut, User,
   ChevronDown, Menu
 } from 'lucide-react';
 
@@ -116,9 +116,6 @@ export default function Layout({ children, active, onNav, hasProject, onLogout }
 
         <div className="headerActions">
           <div className="safeModePill"><ShieldCheck size={14}/> Safe Mode</div>
-          <button className="iconBtn" title="Search"><Search size={18}/></button>
-          <button className="iconBtn" title="Help"><HelpCircle size={18}/></button>
-          <button className="iconBtn" title="Notifications"><Bell size={18}/></button>
           <button className="iconBtn" title="User Profile"><User size={18}/></button>
           <button className="iconBtn signoutBtn" onClick={onLogout} title="Sign Out"><LogOut size={18}/></button>
           <button className="mobileMenuToggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
