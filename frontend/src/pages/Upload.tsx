@@ -126,17 +126,29 @@ export default function Upload({ project, setProject, onLoaded }: {project?: Mig
 
         <span className="dragDropHint">or drag and drop files here</span>
 
-        {/* Selected Files Badge List */}
+        {/* Selected Files Badge List & Action Trigger */}
         {files.length > 0 && (
           <div className="selectedFilesChipList">
-            {files.map((f, idx) => (
-              <span key={`${f.name}-${idx}`} className="selectedFileChip">
-                {f.name}
-                <span className="removeChip" onClick={(e) => { e.stopPropagation(); removeFile(idx); }} title="Remove file">
-                  <X size={14} />
+            <div className="chipItemsRow">
+              {files.map((f, idx) => (
+                <span key={`${f.name}-${idx}`} className="selectedFileChip">
+                  {f.name}
+                  <span className="removeChip" onClick={(e) => { e.stopPropagation(); removeFile(idx); }} title="Remove file">
+                    <X size={14} />
+                  </span>
                 </span>
-              </span>
-            ))}
+              ))}
+            </div>
+
+            <button 
+              type="button" 
+              className="startUploadBtn" 
+              onClick={(e) => { e.stopPropagation(); submit(); }}
+              disabled={busy}
+            >
+              <UploadIcon size={16} />
+              <span>{busy ? 'Inventorying and classifying...' : `Upload & Analyze ${files.length} File${files.length > 1 ? 's' : ''} →`}</span>
+            </button>
           </div>
         )}
       </div>
