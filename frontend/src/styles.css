@@ -1766,3 +1766,224 @@ body { margin: 0; background: #F5F7FB; color: #15213A; overflow-x: hidden; }
   color: #64748b !important;
   margin-top: 8px !important;
 }
+
+/* --- REPLICATED MODERN UPLOAD WORKSPACE UI --- */
+.uploadDropzone {
+  border: 2px dashed #a5b4fc !important;
+  border-radius: 18px !important;
+  padding: 38px 24px !important;
+  text-align: center !important;
+  background: linear-gradient(180deg, #fbfaff 0%, #ffffff 100%) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+  margin-top: 14px !important;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.04) !important;
+}
+
+.uploadDropzone.dragging {
+  border-color: #6366f1 !important;
+  background: #f5f3ff !important;
+  transform: scale(1.005);
+}
+
+.uploadIllustrationWrapper {
+  margin-bottom: 8px !important;
+}
+
+.uploadTitle {
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin: 12px 0 6px !important;
+}
+
+.uploadSubtitle {
+  font-size: 13px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+  margin: 0 0 20px !important;
+  max-width: 720px !important;
+  line-height: 1.5 !important;
+}
+
+.btnChooseFiles {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: #3730a3 !important;
+  background: linear-gradient(135deg, #4338ca 0%, #312e81 100%) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 12px 28px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 14px rgba(67, 56, 202, 0.3) !important;
+  width: auto !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.btnChooseFiles:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(67, 56, 202, 0.4) !important;
+}
+
+.dragDropHint {
+  font-size: 13px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+  margin-top: 10px !important;
+}
+
+.selectedFilesChipList {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-top: 16px !important;
+  justify-content: center !important;
+  max-width: 800px !important;
+}
+
+.selectedFileChip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  background: #eef2ff !important;
+  border: 1px solid #c7d2fe !important;
+  color: #3730a3 !important;
+  padding: 4px 10px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.selectedFileChip .removeChip {
+  cursor: pointer !important;
+  color: #ef4444 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.uploadActionCardsRow {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 16px !important;
+  margin-top: 20px !important;
+  width: 100% !important;
+}
+
+@media (max-width: 768px) {
+  .uploadActionCardsRow {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.uploadActionCard {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 16px 20px !important;
+  border-radius: 14px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  text-align: left !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+  width: 100% !important;
+  color: inherit !important;
+}
+
+.uploadActionCard:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08) !important;
+}
+
+.uploadActionCard.primaryCard {
+  border: 1.5px solid #c084fc !important;
+  background: #faf5ff !important;
+}
+
+.uploadActionCard.primaryCard:hover {
+  border-color: #9333ea !important;
+  background: #f5f3ff !important;
+}
+
+.uploadActionCard.primaryCard.hasFiles {
+  border-color: #7c3aed !important;
+  background: #f5f3ff !important;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.15) !important;
+}
+
+.uploadActionCard:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.actionCardIcon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 10px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.purpleIcon {
+  background: #ede9fe !important;
+  color: #7c3aed !important;
+}
+
+.blueIcon {
+  background: #eff6ff !important;
+  color: #3b82f6 !important;
+}
+
+.actionCardContent {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.actionCardContent b {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+.actionCardContent span {
+  font-size: 13px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+}
+
+.uploadInfoBanner {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background: #f0f7ff !important;
+  border: 1px solid #dbeafe !important;
+  border-radius: 12px !important;
+  padding: 12px 18px !important;
+  margin-top: 20px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.infoBannerIcon {
+  color: #2563eb !important;
+  flex-shrink: 0 !important;
+}
+
+.uploadInfoBanner span {
+  font-size: 13px !important;
+  color: #1e40af !important;
+  font-weight: 500 !important;
+  line-height: 1.4 !important;
+}
