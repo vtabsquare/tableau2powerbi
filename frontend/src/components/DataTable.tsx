@@ -8,6 +8,20 @@ export default function DataTable({ rows, empty = 'No data available' }: Props) 
 
 function render(value: unknown) {
   if (value === null || value === undefined) return '';
-  if (typeof value === 'object') return <pre className="inlineJson">{JSON.stringify(value, null, 2)}</pre>;
+  if (typeof value === 'object') {
+    return (
+      <pre 
+        className="inlineJson"
+        style={{
+          maxHeight: '120px',
+          overflowY: 'auto',
+          maxWidth: '380px',
+          margin: 0
+        }}
+      >
+        {JSON.stringify(value, null, 2)}
+      </pre>
+    );
+  }
   return String(value);
 }

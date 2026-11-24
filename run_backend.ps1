@@ -15,13 +15,19 @@ foreach ($pidToStop in $portOwners) {
 Start-Sleep -Seconds 1
 
 # Use a short absolute runtime workspace. This prevents Windows path-too-long extraction failures.
-$env:T2PBI_WORKSPACE = "C:\T2PBI_RUNTIME\workspace"
-New-Item -ItemType Directory -Path $env:T2PBI_WORKSPACE -Force | Out-Null
+$runtime = "C:\T2PBI_RUNTIME\workspace"
+try {
+    New-Item -ItemType Directory -Path $runtime -Force -ErrorAction Stop | Out-Null
+} catch {
+    $runtime = Join-Path $env:TEMP "T2PBI_RUNTIME\workspace"
+    New-Item -ItemType Directory -Path $runtime -Force | Out-Null
+}
+$env:T2PBI_WORKSPACE = $runtime
 Write-Host "Runtime workspace: $env:T2PBI_WORKSPACE" -ForegroundColor Cyan
 
 $pythonLauncher = $null
-if (Get-Command py -ErrorAction SilentlyContinue) { $pythonLauncher = "py" }
-elseif (Get-Command python -ErrorAction SilentlyContinue) { $pythonLauncher = "python" }
+if (Get-Command python -ErrorAction SilentlyContinue) { $pythonLauncher = "python" }
+elseif (Get-Command py -ErrorAction SilentlyContinue) { $pythonLauncher = "py" }
 else { throw "Python was not found. Install Python 3.11 or 3.12 and restart PowerShell." }
 
 if (!(Test-Path ".venv\Scripts\python.exe")) {

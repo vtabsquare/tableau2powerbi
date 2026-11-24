@@ -6,8 +6,8 @@ type AuthMode = 'SIGN_IN' | 'REGISTER_EMAIL' | 'VERIFY_OTP' | 'CREATE_PASSWORD';
 
 export default function Login({ onAuthenticated }: { onAuthenticated: () => void }) {
   const [mode, setMode] = useState<AuthMode>('SIGN_IN');
-  const [username, setUsername] = useState('balamuraleee@gmail.com');
-  const [password, setPassword] = useState('12345');
+  const [username, setUsername] = useState('vtabpublicuser@gmail.com');
+  const [password, setPassword] = useState('Demo@12345');
   const [regEmail, setRegEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -128,8 +128,13 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
     setError('');
     setSuccessMsg('');
     try {
-      await login(username, password);
+      const res = await login(username, password);
       sessionStorage.setItem('t2pbi_authenticated', 'true');
+      sessionStorage.setItem('t2pbi_user_email', username.trim().toLowerCase());
+      if (res.token) {
+        sessionStorage.setItem('t2pbi_token', res.token);
+      }
+      sessionStorage.setItem('t2pbi_can_demo', res.can_use_demo_flow ? 'true' : 'false');
       onAuthenticated();
     } catch (err) {
       setError((err as Error).message);
@@ -278,8 +283,29 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
             </button>
           </div>
 
-          <div className="demoWarning" style={{ textAlign: 'center', marginTop: 14 }}>
-            Demo credentials (balamuraleee@gmail.com / 12345) or registered Supabase credentials accepted.
+          <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid #e2e8f0', textAlign: 'center' }}>
+            <a 
+              href="/demo" 
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '8px 16px',
+                background: '#fef3c7',
+                border: '1px solid #fde68a',
+                borderRadius: 8,
+                color: '#92400e',
+                fontWeight: 600,
+                fontSize: 12.5,
+                textDecoration: 'none'
+              }}
+            >
+              <span>Looking for Demo Version? Direct Access Without Login →</span>
+            </a>
+          </div>
+
+          <div className="demoWarning" style={{ textAlign: 'center', marginTop: 12 }}>
+            Production Version requires registered account credentials or authorized access.
           </div>
 
           {serverConfigFooter}

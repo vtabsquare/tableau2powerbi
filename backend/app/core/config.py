@@ -9,13 +9,24 @@ def _default_storage_root() -> Path:
     """Use a short runtime folder while allowing deployment storage to be overridden."""
     env = os.environ.get("T2PBI_WORKSPACE")
     if env:
-        return Path(env).resolve()
+        p = Path(env).resolve()
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+            return p
+        except Exception:
+            pass
     if os.name == "nt":
         try:
-            return Path(r"C:\T2PBI_RUNTIME\workspace").resolve()
+            p = Path(r"C:\T2PBI_RUNTIME\workspace").resolve()
+            p.mkdir(parents=True, exist_ok=True)
+            return p
         except Exception:
-            return (Path(tempfile.gettempdir()) / "T2PBI_RUNTIME" / "workspace").resolve()
-    return (Path(tempfile.gettempdir()) / "t2pbi_runtime" / "workspace").resolve()
+            p = (Path(tempfile.gettempdir()) / "T2PBI_RUNTIME" / "workspace").resolve()
+            p.mkdir(parents=True, exist_ok=True)
+            return p
+    p = (Path(tempfile.gettempdir()) / "t2pbi_runtime" / "workspace").resolve()
+    p.mkdir(parents=True, exist_ok=True)
+    return p
 
 
 def _default_cors_origin_regex() -> str:

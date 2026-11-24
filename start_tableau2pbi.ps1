@@ -28,7 +28,13 @@ if (!(Test-Path $frontendPackage)) { throw "Missing frontend/package.json. Re-ex
 Start-Sleep -Seconds 1
 
 $runtime = "C:\T2PBI_RUNTIME\workspace"
-New-Item -ItemType Directory -Force -Path $runtime | Out-Null
+try {
+    New-Item -ItemType Directory -Force -Path $runtime -ErrorAction Stop | Out-Null
+} catch {
+    $runtime = Join-Path $env:TEMP "T2PBI_RUNTIME\workspace"
+    New-Item -ItemType Directory -Force -Path $runtime | Out-Null
+}
+$env:T2PBI_WORKSPACE = $runtime
 Write-Host "Runtime workspace: $runtime" -ForegroundColor Cyan
 
 Write-Host "Starting backend..." -ForegroundColor Green
@@ -71,6 +77,8 @@ if (!$frontendReady) {
 }
 
 Write-Host "Frontend healthy: http://127.0.0.1:5173" -ForegroundColor Green
+Write-Host "Production Version (Login Required): http://127.0.0.1:5173/" -ForegroundColor Cyan
+Write-Host "Demo Version (Direct Access without Login): http://127.0.0.1:5173/demo" -ForegroundColor Yellow
 Write-Host "Opening TABLEAU2PBI..." -ForegroundColor Cyan
 Start-Process "http://127.0.0.1:5173/"
 Write-Host "Backend docs: http://127.0.0.1:8000/docs" -ForegroundColor Cyan

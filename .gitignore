@@ -25,6 +25,7 @@ workspace/
 backend/workspace/
 backend/uploads/
 backend/exports/
+sample_project_backup/
 *.tmp
 *.tmp.zip
 

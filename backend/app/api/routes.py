@@ -2,6 +2,7 @@ from __future__ import annotations
 import os
 import logging
 import jwt
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from pydantic import BaseModel
@@ -23,6 +24,26 @@ from app.core.audit_logger import log_event, get_recent_audit_logs
 logger = logging.getLogger("tableau2pbi.api")
 
 router = APIRouter(prefix="/api", tags=["tableau2pbi"])
+
+JWT_SECRET = os.environ.get("SESSION_SECRET") or os.environ.get("JWT_SECRET") or "tableau2pbi-workbench-session-secret-2026"
+DEMO_FLOW_AUTHORIZED_EMAILS = {
+    "vtabpublicuser@gmail.com",
+    "vtabpubicuser@gmail.com",
+}
+
+def create_session_token(email: str, role: str) -> tuple[str, bool]:
+    email_clean = email.strip().lower()
+    can_use_demo = email_clean in DEMO_FLOW_AUTHORIZED_EMAILS
+    payload = {
+        "sub": email_clean,
+        "email": email_clean,
+        "role": role,
+        "can_use_demo_flow": can_use_demo,
+        "exp": datetime.now(timezone.utc) + timedelta(days=7),
+        "iat": datetime.now(timezone.utc),
+    }
+    token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+    return token, can_use_demo
 
 
 class LoginRequest(BaseModel):
@@ -140,11 +161,14 @@ def create_password(payload: CreatePasswordRequest):
 
     log_event("REGISTER_SUCCESS", user_id=email_clean, status="SUCCESS")
 
+    token, can_demo = create_session_token(email_clean, updated_user.get("role", "User"))
     return {
         "authenticated": True,
         "display_name": email_clean,
         "role": updated_user.get("role", "User"),
-        "message": "Password created successfully. You are now logged in."
+        "message": "Password created successfully. You are now logged in.",
+        "token": token,
+        "can_use_demo_flow": can_demo,
     }
 
 
@@ -159,26 +183,39 @@ def login(payload: LoginRequest):
     if db_user and db_user.get("password_hash"):
         if verify_password(payload.password, db_user["password_hash"]):
             log_event("LOGIN", user_id=username_clean, status="SUCCESS", details={"method": "db_password"})
+            token, can_demo = create_session_token(db_user.get("email", username_clean), db_user.get("role", "User"))
             return {
                 "authenticated": True,
                 "display_name": db_user.get("email", username_clean),
                 "role": db_user.get("role", "User"),
                 "demo_auth": False,
+                "token": token,
+                "can_use_demo_flow": can_demo,
             }
         else:
             log_event("LOGIN", user_id=username_clean, status="FAILED", details={"reason": "Invalid password"})
             raise HTTPException(status_code=401, detail="Invalid username or password.")
 
     # 2. Check demo/environment configured credentials (fallback)
-    demo_user = (settings.auth_username or "balamuraleee@gmail.com").strip().casefold()
-    demo_pass = settings.auth_password or "12345"
-    if username_clean.casefold() == demo_user and payload.password == demo_pass:
+    demo_accounts = {
+        "vtabpublicuser@gmail.com": "Demo@12345",
+        "vtabpubicuser@gmail.com": "Demo@12345",
+        "balamuraleee@gmail.com": "12345",
+    }
+    if settings.auth_username and settings.auth_password:
+        demo_accounts[settings.auth_username.strip().casefold()] = settings.auth_password
+
+    user_lower = username_clean.casefold()
+    if user_lower in demo_accounts and payload.password == demo_accounts[user_lower]:
         log_event("LOGIN", user_id=username_clean, status="SUCCESS", details={"method": "demo_fallback"})
+        token, can_demo = create_session_token(username_clean, "Migration Administrator")
         return {
             "authenticated": True,
             "display_name": username_clean,
             "role": "Migration Administrator",
             "demo_auth": True,
+            "token": token,
+            "can_use_demo_flow": can_demo,
         }
 
     log_event("LOGIN", user_id=username_clean, status="FAILED", details={"reason": "Invalid credentials"})
@@ -209,11 +246,14 @@ def vtab_sso(payload: VTABSSORequest):
             
         user_email = decoded.get("email")
         log_event("SSO_LOGIN", user_id=user_email, status="SUCCESS")
+        token, can_demo = create_session_token(user_email, "VTAB SSO User")
         return {
             "authenticated": True,
             "display_name": user_email,
             "role": "VTAB SSO User",
             "demo_auth": False,
+            "token": token,
+            "can_use_demo_flow": can_demo,
         }
     except jwt.ExpiredSignatureError:
         log_event("SSO_LOGIN", status="FAILED", details={"reason": "Token expired"})
@@ -221,6 +261,76 @@ def vtab_sso(payload: VTABSSORequest):
     except jwt.InvalidTokenError:
         log_event("SSO_LOGIN", status="FAILED", details={"reason": "Invalid token"})
         raise HTTPException(status_code=401, detail="Invalid SSO token")
+
+
+@router.get("/auth/session")
+def get_session(request: Request, email: str | None = None):
+    auth_header = request.headers.get("Authorization", "")
+    token = None
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+    if not token:
+        token = request.query_params.get("token")
+
+    if token:
+        try:
+            data = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+            em = (data.get("email") or data.get("sub") or "").lower()
+            is_demo = bool(data.get("can_use_demo_flow", False)) or (em in DEMO_FLOW_AUTHORIZED_EMAILS)
+            return {
+                "authenticated": True,
+                "email": em,
+                "role": data.get("role", "User"),
+                "can_use_demo_flow": is_demo,
+                "token": token,
+            }
+        except Exception:
+            pass
+
+    # If token wasn't provided or expired, check requested email / header
+    req_email = (email or request.headers.get("X-User-Email") or "").strip().lower()
+    if req_email in DEMO_FLOW_AUTHORIZED_EMAILS:
+        new_token, can_demo = create_session_token(req_email, "Migration Administrator")
+        return {
+            "authenticated": True,
+            "email": req_email,
+            "role": "Migration Administrator",
+            "can_use_demo_flow": True,
+            "token": new_token,
+        }
+    elif req_email:
+        new_token, can_demo = create_session_token(req_email, "User")
+        return {
+            "authenticated": True,
+            "email": req_email,
+            "role": "User",
+            "can_use_demo_flow": False,
+            "token": new_token,
+        }
+
+    return {"authenticated": False, "can_use_demo_flow": False}
+
+
+@router.api_route("/auth/demo-session", methods=["GET", "POST"])
+def demo_session():
+    """
+    Dedicated endpoint for Tableau Demo Version direct access.
+    Generates a pre-authenticated demo session token without requiring credentials.
+    Ensures users accessing the Demo URL never see or get redirected to a login page.
+    """
+    token, can_demo = create_session_token("vtabpublicuser@gmail.com", "Tableau Demo User")
+    log_event("DEMO_DIRECT_ACCESS", user_id="vtabpublicuser@gmail.com", status="SUCCESS")
+    return {
+        "authenticated": True,
+        "display_name": "Tableau Demo User",
+        "email": "vtabpublicuser@gmail.com",
+        "role": "Tableau Demo User",
+        "is_demo_mode": True,
+        "can_use_demo_flow": True,
+        "token": token,
+        "access_mode": "demo",
+        "message": "Direct access demo session initialized successfully."
+    }
 
 
 @router.get("/upload-models")
@@ -240,10 +350,26 @@ def health():
 
 
 @router.post("/projects/upload", response_model=MigrationProject)
-def upload_project(files: list[UploadFile] = File(...)):
+def upload_project(request: Request, files: list[UploadFile] = File(...)):
     if not files:
         raise HTTPException(status_code=400, detail="Upload at least one Tableau file or ZIP package.")
     project_name = Path(files[0].filename).stem
+
+    access_mode = request.headers.get("X-Access-Mode", "").lower()
+    auth_header = request.headers.get("Authorization", "")
+    is_demo = (access_mode == "demo")
+    if not is_demo and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+        try:
+            decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+            if decoded.get("can_use_demo_flow") or (decoded.get("email") or "").lower() in DEMO_FLOW_AUTHORIZED_EMAILS:
+                is_demo = True
+        except Exception:
+            pass
+
+    if is_demo and not project_name.startswith("Demo_"):
+        project_name = f"Demo_{project_name}"
+
     project_id, project_path = new_project_dir(project_name)
     try:
         saved = [save_upload(project_path, f) for f in files]
@@ -268,16 +394,34 @@ def upload_project(files: list[UploadFile] = File(...)):
 
 
 @router.post("/projects/demo", response_model=MigrationProject)
-def load_demo_project():
+def load_demo_project(request: Request):
+    auth_header = request.headers.get("Authorization", "")
+    access_mode = request.headers.get("X-Access-Mode", "").lower()
+    if access_mode != "demo":
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
+            try:
+                decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+                email = (decoded.get("email") or decoded.get("sub") or "").lower()
+                if not decoded.get("can_use_demo_flow") and email not in DEMO_FLOW_AUTHORIZED_EMAILS:
+                    log_event("DEMO_ACCESS_DENIED", user_id=email, status="FORBIDDEN")
+                    raise HTTPException(status_code=403, detail="Demo workflow is restricted to authorized accounts.")
+            except jwt.PyJWTError:
+                raise HTTPException(status_code=401, detail="Invalid session token.")
+
     base = Path(__file__).resolve().parents[3] / "sample_project"
-    demo_files = [p for p in base.iterdir() if p.is_file()]
-    project_id, project_path = new_project_dir("Demo_Superstore_Tableau")
+    demo_files = [p for p in base.iterdir() if p.is_file()] if base.exists() else []
+    if not demo_files:
+        test_pkg = Path(__file__).resolve().parents[3] / "test_packages" / "complex_tableau_retail_migration_test_package.zip"
+        if test_pkg.exists():
+            demo_files = [test_pkg]
+    project_id, project_path = new_project_dir("Enterprise_Retail_Operations_Demo")
     saved = []
     for source in demo_files:
         target = project_path / "uploads" / source.name
         target.write_bytes(source.read_bytes())
         saved.append(target)
-    project = MigrationProject(project_id=project_id, project_name="Demo_Superstore_Tableau", workspace_path=str(project_path))
+    project = MigrationProject(project_id=project_id, project_name="Enterprise_Retail_Operations_Demo", workspace_path=str(project_path))
     project = run_pipeline(project, saved)
     persist_project(project)
     log_event("LOAD_DEMO_PROJECT", project_id=project_id, status="SUCCESS")
@@ -351,6 +495,27 @@ def validate(project_id: str):
 @router.post("/projects/{project_id}/export")
 def export_project(project_id: str, request: Request):
     project = load_project(project_id)
+
+    auth_header = request.headers.get("Authorization", "")
+    access_mode = request.headers.get("X-Access-Mode", "").lower()
+    is_demo_mode = (access_mode == "demo")
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+        try:
+            decoded = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+            email = (decoded.get("email") or decoded.get("sub") or "").lower()
+            if decoded.get("can_use_demo_flow") or email in DEMO_FLOW_AUTHORIZED_EMAILS:
+                is_demo_mode = True
+        except jwt.PyJWTError:
+            pass
+
+    if is_demo_mode or (project.project_name and "demo" in project.project_name.lower()):
+        log_event("EXPORT_LOCKED_DEMO", project_id=project_id, status="FORBIDDEN")
+        raise HTTPException(
+            status_code=403, 
+            detail="Export package generation is locked in the demo version. Please contact demo support to unlock full Power BI export packages."
+        )
+
     project.tde_analysis = build_tde_analysis(project)
     project.migration_decisions = build_migration_decisions(project)
     project.reconciliation_plan = build_reconciliation_plan(project)
@@ -382,8 +547,13 @@ def export_project(project_id: str, request: Request):
 
 
 @router.get("/projects/{project_id}/export/download")
-def download_export(project_id: str):
+def download_export(project_id: str, request: Request):
     project = load_project(project_id)
+    if project.project_name and "demo" in project.project_name.lower():
+        raise HTTPException(
+            status_code=403,
+            detail="Export package download is locked in the demo version. Please contact demo support."
+        )
     if not project.export_path or not Path(project.export_path).exists():
         zip_path = write_export(project)
         project.export_path = str(zip_path)

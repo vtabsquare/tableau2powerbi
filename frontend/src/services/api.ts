@@ -48,6 +48,21 @@ export function setCustomApiBaseUrl(url: string | null): void {
 
 export const API_BASE_URL = getApiBaseUrl();
 
+export function isDemoRoute(): boolean {
+  if (typeof window === 'undefined') return false;
+  const path = window.location.pathname.toLowerCase();
+  const search = window.location.search.toLowerCase();
+  const hash = window.location.hash.toLowerCase();
+  return (
+    path === '/demo' ||
+    path.startsWith('/demo/') ||
+    search.includes('mode=demo') ||
+    search.includes('demo=true') ||
+    hash.includes('/demo') ||
+    hash.includes('mode=demo')
+  );
+}
+
 export function makeAbsoluteApiUrl(url: string): string {
   if (!url) return url;
   if (/^https?:\/\//i.test(url)) return url;
@@ -56,8 +71,20 @@ export function makeAbsoluteApiUrl(url: string): string {
 }
 
 export async function apiFetch(url: string, init?: RequestInit): Promise<Response> {
+  const isDemo = isDemoRoute();
+  const token = typeof window !== 'undefined' 
+    ? (isDemo ? (sessionStorage.getItem('t2pbi_demo_token') || sessionStorage.getItem('t2pbi_token')) : sessionStorage.getItem('t2pbi_token'))
+    : null;
+  const headers = new Headers(init?.headers);
+  if (isDemo && !headers.has('X-Access-Mode')) {
+    headers.set('X-Access-Mode', 'demo');
+  }
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+  const config: RequestInit = { ...init, headers };
   try {
-    return await fetch(url, init);
+    return await fetch(url, config);
   } catch (err) {
     const msg = (err as Error)?.message || '';
     if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) {
@@ -182,13 +209,92 @@ export async function downloadExportPackage(downloadUrl: string, filename: strin
   setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
 }
 
-export async function login(username: string, password: string): Promise<{authenticated: boolean}> {
+export async function login(username: string, password: string): Promise<{
+  authenticated: boolean;
+  display_name?: string;
+  role?: string;
+  demo_auth?: boolean;
+  token?: string;
+  can_use_demo_flow?: boolean;
+}> {
   const response = await apiFetch(`${getApiBaseUrl()}/api/auth/login`, {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({username, password})
   });
   return asJson(response);
+}
+
+export async function getDemoSession(): Promise<{ authenticated: boolean; token: string; email: string; can_use_demo_flow: boolean; is_demo_mode: boolean }> {
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/api/auth/demo-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Mode': 'demo'
+      }
+    });
+    const data = await asJson<{ authenticated: boolean; token: string; email: string; can_use_demo_flow: boolean; is_demo_mode: boolean }>(response);
+    if (data.token && typeof window !== 'undefined') {
+      sessionStorage.setItem('t2pbi_demo_token', data.token);
+      sessionStorage.setItem('t2pbi_demo_authenticated', 'true');
+      sessionStorage.setItem('t2pbi_can_demo', 'true');
+    }
+    return data;
+  } catch {
+    const fallbackToken = 'demo-direct-access-token';
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('t2pbi_demo_authenticated', 'true');
+      sessionStorage.setItem('t2pbi_can_demo', 'true');
+    }
+    return {
+      authenticated: true,
+      token: fallbackToken,
+      email: 'vtabpublicuser@gmail.com',
+      can_use_demo_flow: true,
+      is_demo_mode: true
+    };
+  }
+}
+
+export async function checkSession(): Promise<{ authenticated: boolean; email?: string; can_use_demo_flow?: boolean; token?: string }> {
+  if (isDemoRoute()) {
+    const demoToken = typeof window !== 'undefined' ? sessionStorage.getItem('t2pbi_demo_token') : null;
+    if (demoToken) {
+      return {
+        authenticated: true,
+        email: 'vtabpublicuser@gmail.com',
+        can_use_demo_flow: true,
+        token: demoToken
+      };
+    }
+    const demo = await getDemoSession();
+    return {
+      authenticated: true,
+      email: demo.email,
+      can_use_demo_flow: true,
+      token: demo.token
+    };
+  }
+
+  try {
+    const email = (typeof window !== 'undefined' ? sessionStorage.getItem('t2pbi_user_email') : null) || '';
+    const prodToken = typeof window !== 'undefined' ? sessionStorage.getItem('t2pbi_token') : null;
+    const headers: Record<string, string> = {};
+    if (email) headers['X-User-Email'] = email;
+    if (prodToken) headers['Authorization'] = `Bearer ${prodToken}`;
+
+    const response = await apiFetch(`${getApiBaseUrl()}/api/auth/session${email ? `?email=${encodeURIComponent(email)}` : ''}`, {
+      headers
+    });
+    const data = await asJson<{ authenticated: boolean; email?: string; can_use_demo_flow?: boolean; token?: string }>(response);
+    if (data.token && typeof window !== 'undefined') {
+      sessionStorage.setItem('t2pbi_token', data.token);
+    }
+    return data;
+  } catch {
+    return { authenticated: false, can_use_demo_flow: false };
+  }
 }
 
 export async function registerRequest(email: string): Promise<{status: string; message: string; email: string; dev_otp?: string}> {

@@ -78,6 +78,20 @@ for (const page of expectedPages) {
   assert(content.length > 100, `Page component has non-empty implementation: ${page}`);
 }
 
+const modalPath = path.join(FRONTEND_ROOT, 'src', 'components', 'NewMigrationModal.tsx');
+assert(fs.existsSync(modalPath), 'NewMigrationModal.tsx component exists');
+const modalContent = fs.readFileSync(modalPath, 'utf-8');
+assert(modalContent.includes('Start New Migration'), 'NewMigrationModal has modal title');
+assert(modalContent.includes('Upload Your File'), 'NewMigrationModal has Upload Your File option');
+assert(modalContent.includes('Use Demo File'), 'NewMigrationModal has Use Demo File option');
+
+const contactModalPath = path.join(FRONTEND_ROOT, 'src', 'components', 'ContactDemoModal.tsx');
+assert(fs.existsSync(contactModalPath), 'ContactDemoModal.tsx component exists');
+const contactModalContent = fs.readFileSync(contactModalPath, 'utf-8');
+assert(contactModalContent.includes('Demo Ended'), 'ContactDemoModal has modal title');
+assert(contactModalContent.includes('contactsales@vtabsquare.com'), 'ContactDemoModal has contact email');
+assert(contactModalContent.includes('https://www.vtabsquare.com/'), 'ContactDemoModal has demo link');
+
 // 3. Verify Deletion UI Control in Summary.tsx
 console.log('\n--- 3. Testing Deletion UI Control Safety ---');
 const summaryContent = fs.readFileSync(path.join(PAGES_DIR, 'Summary.tsx'), 'utf-8');
@@ -93,6 +107,24 @@ assert(apiServiceContent.includes('export async function loadDemo'), 'api.ts exp
 assert(apiServiceContent.includes('export async function exportProject'), 'api.ts exports exportProject');
 assert(apiServiceContent.includes('export async function deleteProject'), 'api.ts exports deleteProject');
 assert(apiServiceContent.includes('export async function login'), 'api.ts exports login');
+assert(apiServiceContent.includes('export function isDemoRoute'), 'api.ts exports isDemoRoute');
+assert(apiServiceContent.includes('export async function getDemoSession'), 'api.ts exports getDemoSession');
+
+// 5. Verify Separate Dedicated Access URLs (Production vs Demo)
+console.log('\n--- 5. Testing Dedicated Production and Demo URL Architecture ---');
+const mainContent = fs.readFileSync(path.join(FRONTEND_ROOT, 'src', 'main.tsx'), 'utf-8');
+assert(mainContent.includes('isDemoRoute'), 'main.tsx checks isDemoRoute');
+assert(mainContent.includes('!isDemoMode && !authenticated'), 'main.tsx never redirects Demo users to login');
+assert(mainContent.includes('Demo session reset. Direct demo access remains active'), 'main.tsx keeps demo users in demo mode upon reset');
+
+const layoutContent = fs.readFileSync(path.join(FRONTEND_ROOT, 'src', 'components', 'Layout.tsx'), 'utf-8');
+assert(layoutContent.includes('demoVersionPillBadge'), 'Layout.tsx renders Demo Version badge');
+assert(layoutContent.includes('prodVersionPillBadge'), 'Layout.tsx renders Production Version badge');
+assert(!layoutContent.includes('<span>Production Login</span>'), 'Layout.tsx does not display Production Login in demo version');
+assert(layoutContent.includes('href="/demo"'), 'Layout.tsx has link to Demo Version');
+
+const loginContent = fs.readFileSync(path.join(PAGES_DIR, 'Login.tsx'), 'utf-8');
+assert(loginContent.includes('href="/demo"'), 'Login.tsx offers direct link to Demo Version without login');
 
 console.log('\n====================================================');
 console.log(`  UI/UX TEST RESULTS: ${passedTests} PASSED, ${failedTests} FAILED  `);
