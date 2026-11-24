@@ -5,8 +5,6 @@ import { saveSourceMappings } from '../services/api';
 
 const connectors = ['CSV','Text','Excel','Folder','JSON','XML','Parquet','SQL Server','Oracle','PostgreSQL','MySQL','Snowflake','Databricks','BigQuery','Azure SQL','OData','Web API','SharePoint Folder','OneLake/Fabric Lakehouse','Manual source placeholder'];
 
-type FilterMode = 'all' | 'original' | 'local' | 'database' | 'manual' | 'extracts';
-
 function isExtractLike(m: SourceMappingType) {
   return `${m.original_connection_type} ${m.detected_source_path} ${m.target_file_path} ${m.datasource} ${m.mapping_status}`.toLowerCase().includes('.tde') || `${m.original_connection_type} ${m.detected_source_path} ${m.target_file_path} ${m.datasource} ${m.mapping_status}`.toLowerCase().includes('.hyper') || `${m.mapping_status}`.toLowerCase().includes('extract');
 }
@@ -15,7 +13,6 @@ export default function SourceMapping({ project, setProject }: {project: Migrati
   const [mappings, setMappings] = useState<SourceMappingType[]>(project.source_mappings);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
-  const [filter, setFilter] = useState<FilterMode>('original');
 
   useEffect(() => setMappings(project.source_mappings), [project.project_id, project.source_mappings]);
 
@@ -31,24 +28,16 @@ export default function SourceMapping({ project, setProject }: {project: Migrati
     catch (e) { setError((e as Error).message); }
     finally { setBusy(false); }
   }
-  const filtered = useMemo(() => mappings.filter(m => {
-    if (filter === 'all') return true;
-    if (filter === 'manual') return m.target_connector === 'Manual source placeholder';
-    if (filter === 'local') return ['CSV','Text','Excel','JSON','XML','Parquet','Folder'].includes(m.target_connector);
-    if (filter === 'database') return ['SQL Server','Oracle','PostgreSQL','MySQL','Snowflake','Databricks','BigQuery','Azure SQL','OData','Web API','SharePoint Folder','OneLake/Fabric Lakehouse'].includes(m.target_connector);
-    if (filter === 'extracts') return isExtractLike(m);
-    if (filter === 'original') return !isExtractLike(m);
-    return true;
-  }), [mappings, filter]);
+  const filtered = useMemo(() => {
+    const nonExtracts = mappings.filter(m => !isExtractLike(m));
+    return nonExtracts.length > 0 ? nonExtracts : mappings;
+  }, [mappings]);
 
   return <div className="page">
-    <Card title={`Source Mapping & Connection Update (${filtered.length}/${mappings.length})`} right={<button className="primary" onClick={save} disabled={busy}>{busy ? 'Saving & regenerating...' : 'Apply & Regenerate M'}</button>}>
+    <Card title={`Source Mapping & Connection Details (${filtered.length} Tables)`} right={<button className="primary" onClick={save} disabled={busy}>{busy ? 'Saving & regenerating...' : 'Apply & Regenerate M'}</button>}>
       {error && <div className="error">{error}</div>}
-      <div className="sourceToolbar">
-        {(['all','original','local','database','manual','extracts'] as FilterMode[]).map(f => <button key={f} className={filter === f ? 'activeChip' : ''} onClick={() => setFilter(f)}>{f}</button>)}
-      </div>
-      <div className="note userFriendlyNote"><strong>Business sources first.</strong> Metadata sidecars are excluded automatically. You can remove unused or unnecessary tables using the Remove Table button on any card before applying.</div>
-      {!filtered.length && <div className="empty">No sources in this filter.</div>}
+      <div className="note userFriendlyNote"><strong>Business Sources:</strong> All detected tables from your Tableau model are listed below. Configure file paths, connectors, or remove unnecessary tables before applying.</div>
+      {!filtered.length && <div className="empty">No source tables detected in project.</div>}
       <div className="sourceCards twoColCards">{filtered.map((m) => <div className={`sourceCard ${isExtractLike(m) ? 'extractCard' : ''}`} key={m.source_id}>
         <div className="rowBetween">
           <h3>{m.datasource}{m.table_name ? ` - ${m.table_name}` : (m.detected_source_path ? ` - ${m.detected_source_path.split(/[\\/]/).pop()}` : '')}</h3>
