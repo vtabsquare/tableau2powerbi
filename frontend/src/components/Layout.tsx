@@ -226,34 +226,19 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
           <TopNavLinks />
         </nav>
 
-        <div className="headerActions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="headerActions">
           <div className="safeModePill"><ShieldCheck size={14}/> Safe Mode</div>
           {!isDemoMode && (
             <a 
               href="/demo" 
               className="modeSwitchLink" 
               title="Open Tableau Demo Version (Direct Access without Login)"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '5px',
-                padding: '5px 12px',
-                background: 'rgba(245, 158, 11, 0.15)',
-                border: '1px solid rgba(245, 158, 11, 0.3)',
-                borderRadius: '6px',
-                color: '#fbbf24',
-                fontSize: '12px',
-                fontWeight: 600,
-                textDecoration: 'none',
-                transition: 'all 0.2s',
-                whiteSpace: 'nowrap'
-              }}
             >
               <span>Explore Demo</span>
               <ArrowRight size={13} />
             </a>
           )}
-          <button className="iconBtn" title="User Profile"><User size={18}/></button>
+          <button className="iconBtn userProfileBtn" title="User Profile"><User size={18}/></button>
           <button 
             className="iconBtn signoutBtn" 
             onClick={onLogout} 

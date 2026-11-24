@@ -3043,3 +3043,122 @@ button.demoToastBtn:hover, .demoToastBtn:hover {
   pointer-events: auto !important;
   transform: translateY(0) scale(1) !important;
 }
+
+/* ============================================================
+   FIX: EXPLORE DEMO OVERLAY & HEADER ACTIONS SPACING
+   ============================================================ */
+.headerActions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-left: auto !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+}
+
+.modeSwitchLink {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 14px !important;
+  background: rgba(245, 158, 11, 0.18) !important;
+  border: 1.5px solid rgba(245, 158, 11, 0.45) !important;
+  border-radius: 8px !important;
+  color: #fbbf24 !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  width: auto !important;
+  box-shadow: none !important;
+  position: static !important;
+  transition: all 0.2s ease !important;
+  margin: 0 !important;
+  cursor: pointer !important;
+}
+
+.modeSwitchLink:hover {
+  background: rgba(245, 158, 11, 0.28) !important;
+  border-color: rgba(245, 158, 11, 0.7) !important;
+  color: #fef08a !important;
+}
+
+.headerActions .iconBtn {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  max-width: 34px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  position: static !important;
+  line-height: 1 !important;
+  transition: background 0.15s ease !important;
+}
+
+.headerActions .iconBtn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+/* ============================================================
+   FIX: HIGH-CONTRAST BOLD BLACK TEXT FOR UPLOAD WORKSPACE
+   ============================================================ */
+.uploadGuidance {
+  margin-bottom: 18px !important;
+}
+
+.uploadGuidance > div {
+  background: #f8fafc !important;
+  border: 1px solid #cbd5e1 !important;
+  padding: 14px 16px !important;
+}
+
+.uploadGuidance b {
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  margin-bottom: 4px !important;
+  display: block !important;
+}
+
+.uploadGuidance span {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
+  line-height: 1.5 !important;
+  display: block !important;
+}
+
+.uploadSubtitle {
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
+  margin: 0 0 20px !important;
+  max-width: 760px !important;
+  line-height: 1.55 !important;
+}
+
+.dragDropHint {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
+  margin-top: 10px !important;
+}
+
+.uploadInfoBanner span {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: #000000 !important;
+  line-height: 1.45 !important;
+}
