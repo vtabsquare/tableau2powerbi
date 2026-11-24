@@ -39,13 +39,16 @@ export default function SourceMapping({ project, setProject }: {project: Migrati
       <div className="note userFriendlyNote"><strong>Business Sources:</strong> All detected tables from your Tableau model are listed below. Configure file paths, connectors, or remove unnecessary tables before applying.</div>
       {!filtered.length && <div className="empty">No source tables detected in project.</div>}
       <div className="sourceCards twoColCards">{filtered.map((m) => <div className={`sourceCard ${isExtractLike(m) ? 'extractCard' : ''}`} key={m.source_id}>
-        <div className="rowBetween">
-          <h3>{m.datasource}{m.table_name ? ` - ${m.table_name}` : (m.detected_source_path ? ` - ${m.detected_source_path.split(/[\\/]/).pop()}` : '')}</h3>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+        <div className="sourceCardHeader">
+          <div className="sourceCardTitle">
+            <h3>{m.datasource}{m.table_name ? ` - ${m.table_name}` : (m.detected_source_path ? ` - ${m.detected_source_path.split(/[\\/]/).pop()}` : '')}</h3>
+            <span className="sourceCardSub">Original: <b>{m.original_connection_type}</b></span>
+          </div>
+          <div className="sourceCardActions">
             <span className="miniStatus">{m.mapping_status || 'Detected'}</span>
             <button 
               type="button"
-              style={{ padding: '2px 8px', fontSize: '11px', background: '#fee2e2', color: '#dc2626', border: '1px solid #f87171', borderRadius: '4px', cursor: 'pointer', fontWeight: 600 }}
+              className="removeTableBtn"
               title="Remove this unused or unnecessary table from the migration model"
               onClick={() => removeSource(m.source_id)}
             >
@@ -53,7 +56,6 @@ export default function SourceMapping({ project, setProject }: {project: Migrati
             </button>
           </div>
         </div>
-        <p className="muted">Original: {m.original_connection_type}</p>
         <label>Target connector<select value={m.target_connector} onChange={e => update(m.source_id, 'target_connector', e.target.value)}>{connectors.map(c => <option key={c}>{c}</option>)}</select></label>
         <div className="grid2 tightGrid">
           <label>File path<input value={m.target_file_path || ''} onChange={e => update(m.source_id, 'target_file_path', e.target.value)} placeholder="C:\\Data\\source.csv or data/source.csv"/></label>
