@@ -43,9 +43,11 @@ const orderedStages = [
 export default function Layout({ children, active, onNav, hasProject, onLogout, onNewMigration, isDemoMode, onContactDemo }: Props) {
   const [projectsMenuOpen, setProjectsMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isScrollingTop, setIsScrollingTop] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
   const mainPanelRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -53,10 +55,18 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setProjectsMenuOpen(false);
       }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const userEmail = typeof window !== 'undefined' 
+    ? (sessionStorage.getItem('t2pbi_user_email') || 'balamuraleee@gmail.com') 
+    : 'balamuraleee@gmail.com';
+  const userName = userEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Administrator';
 
   // Demo Version Only: Dynamic visibility based on 300px scroll threshold
   useEffect(() => {
@@ -238,7 +248,67 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
               <ArrowRight size={13} />
             </a>
           )}
-          <button className="iconBtn userProfileBtn" title="User Profile"><User size={18}/></button>
+          <div className="profileDropdownContainer" ref={profileRef}>
+            <button 
+              className={`iconBtn userProfileBtn ${profileOpen ? 'active' : ''}`} 
+              onClick={() => setProfileOpen(!profileOpen)}
+              title="User Profile & Settings"
+              aria-expanded={profileOpen}
+            >
+              <User size={18}/>
+            </button>
+
+            {profileOpen && (
+              <div className="profileDropdownMenu">
+                <div className="profileDropdownHeader">
+                  <div className="profileAvatarLarge">
+                    {(userEmail[0] || 'A').toUpperCase()}
+                  </div>
+                  <div className="profileInfo">
+                    <div className="profileNameRow">
+                      <b>{userName}</b>
+                      <span className="profileRoleBadge">Admin</span>
+                    </div>
+                    <span className="profileEmail">{userEmail}</span>
+                  </div>
+                </div>
+
+                <div className="profileDivider" />
+
+                <div className="profileDetailsGrid">
+                  <div className="profileDetailItem">
+                    <span className="detailLabel">Workspace</span>
+                    <b className="detailValue">{isDemoMode ? 'Interactive Demo' : 'Enterprise Prod'}</b>
+                  </div>
+                  <div className="profileDetailItem">
+                    <span className="detailLabel">Pipeline Engine</span>
+                    <b className="detailValue">15-Stage Automated</b>
+                  </div>
+                  <div className="profileDetailItem">
+                    <span className="detailLabel">Workbench Version</span>
+                    <b className="detailValue">v11.6.2 Enterprise</b>
+                  </div>
+                  <div className="profileDetailItem">
+                    <span className="detailLabel">Safe Openable Mode</span>
+                    <b className="detailValue greenText">Active (Default)</b>
+                  </div>
+                </div>
+
+                <div className="profileDivider" />
+
+                <div className="profileActions">
+                  <button 
+                    type="button" 
+                    className="profileLogoutBtn" 
+                    onClick={() => { setProfileOpen(false); onLogout(); }}
+                  >
+                    <LogOut size={15} />
+                    <span>{isDemoMode ? 'Reset Demo Session' : 'Sign Out of Workbench'}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <button 
             className="iconBtn signoutBtn" 
             onClick={onLogout} 

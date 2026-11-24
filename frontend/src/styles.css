@@ -3162,3 +3162,165 @@ button.demoToastBtn:hover, .demoToastBtn:hover {
   color: #000000 !important;
   line-height: 1.45 !important;
 }
+
+/* ============================================================
+   PROFILE DROPDOWN POPUP MENU
+   ============================================================ */
+.profileDropdownContainer {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.profileDropdownMenu {
+  position: absolute !important;
+  top: calc(100% + 12px) !important;
+  right: 0 !important;
+  width: 330px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.08) !important;
+  z-index: 9999 !important;
+  padding: 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  animation: modalFadeIn 0.2s ease-out !important;
+  color: #0f172a !important;
+  text-align: left !important;
+}
+
+.profileDropdownHeader {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.profileAvatarLarge {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #2563eb 0%, #4338ca 100%) !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  flex-shrink: 0 !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3) !important;
+}
+
+.profileInfo {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.profileNameRow {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.profileNameRow b {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.profileRoleBadge {
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+  border: 1px solid #a7f3d0 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 1px 7px !important;
+  border-radius: 999px !important;
+}
+
+.profileEmail {
+  font-size: 12.5px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.profileDivider {
+  height: 1px !important;
+  background: #f1f5f9 !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.profileDetailsGrid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  background: #f8fafc !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  border: 1px solid #edf2f7 !important;
+}
+
+.profileDetailItem {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+.profileDetailItem .detailLabel {
+  font-size: 10.5px !important;
+  color: #64748b !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.04em !important;
+}
+
+.profileDetailItem .detailValue {
+  font-size: 12px !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+.profileDetailItem .detailValue.greenText {
+  color: #059669 !important;
+}
+
+.profileActions {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.profileLogoutBtn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  padding: 10px 14px !important;
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fca5a5 !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-shadow: none !important;
+}
+
+.profileLogoutBtn:hover {
+  background: #fecaca !important;
+  border-color: #f87171 !important;
+  color: #991b1b !important;
+}
