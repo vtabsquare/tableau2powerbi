@@ -55,7 +55,17 @@ function asRows(project: MigrationProject, name: string, sourceRows: Record<stri
   }
 }
 
-export default function TDEStrategy({ project, setProject }: {project: MigrationProject; setProject: (p: MigrationProject) => void}) {
+export default function TDEStrategy({
+  project,
+  setProject,
+  onSavingChange,
+  onSaved,
+}: {
+  project: MigrationProject;
+  setProject: (p: MigrationProject) => void;
+  onSavingChange?: (saving: boolean) => void;
+  onSaved?: () => void;
+}) {
   const [mappings, setMappings] = useState<SourceMapping[]>(project.source_mappings || []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -78,10 +88,19 @@ export default function TDEStrategy({ project, setProject }: {project: Migration
     setMappings(mappings.filter(m => m.source_id !== sourceId));
   }
   async function save() {
-    setBusy(true); setError(undefined);
-    try { setProject(await saveSourceMappings(project.project_id, mappings)); }
-    catch (e) { setError((e as Error).message); }
-    finally { setBusy(false); }
+    setBusy(true);
+    onSavingChange?.(true);
+    setError(undefined);
+    try {
+      const updated = await saveSourceMappings(project.project_id, mappings);
+      setProject(updated);
+      onSaved?.();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+      onSavingChange?.(false);
+    }
   }
 
   return <div className="page tdePage">

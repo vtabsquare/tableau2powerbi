@@ -4708,3 +4708,20 @@ button.demoToastBtn:hover, .demoToastBtn:hover {
   opacity: 0.45 !important;
   cursor: not-allowed !important;
 }
+
+.topNavShell .pageContentWrapper {
+  padding-bottom: 76px !important;
+}
+
+.primary.stageNextLocked,
+button.primary:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(25%) !important;
+}
+
+.stageLockHint {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+}

@@ -49,6 +49,8 @@ function App() {
   const [isContactDemoModalOpen, setIsContactDemoModalOpen] = useState(false);
   const [active, setActive] = useState('Landing');
   const [project, setProject] = useState<MigrationProject>();
+  const [tdeValidatedProjectId, setTdeValidatedProjectId] = useState<string | null>(null);
+  const [tdeSaving, setTdeSaving] = useState(false);
   const [ssoLoading, setSsoLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -231,7 +233,14 @@ function App() {
       case 'Upload Models': return <UploadModels project={project}/>;
       case '360 Summary': return requireProject(<Summary project={project!} onDeleted={() => { setProject(undefined); setActive('Upload'); }}/>);
       case 'File Processing Tree': return requireProject(<FileProcessingTree project={project!}/>);
-      case 'TDE Source Recovery': return requireProject(<TDEStrategy project={project!} setProject={setProject}/>);
+      case 'TDE Source Recovery': return requireProject(
+        <TDEStrategy
+          project={project!}
+          setProject={setProject}
+          onSavingChange={setTdeSaving}
+          onSaved={() => setTdeValidatedProjectId(project?.project_id || null)}
+        />
+      );
       case 'Source Overview': return requireProject(<SourceOverview project={project!}/>);
       case 'Source Mapping': return requireProject(<SourceMapping project={project!} setProject={setProject}/>);
       case 'Preview & Types': return requireProject(<PreviewTypes project={project!}/>);
@@ -249,6 +258,10 @@ function App() {
   if (ssoLoading) return <div style={{display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white', fontFamily: 'system-ui'}}>Logging you in securely...</div>;
   if (!isDemoMode && !authenticated) return <Login onAuthenticated={() => setAuthenticated(true)}/>;
 
+  const tdeNextLocked =
+    active === 'TDE Source Recovery' &&
+    (tdeSaving || !project || tdeValidatedProjectId !== project.project_id);
+
   return (
     <>
       <Layout 
@@ -259,6 +272,14 @@ function App() {
         onNewMigration={handleNewMigration}
         isDemoMode={isDemo}
         onContactDemo={() => setIsContactDemoModalOpen(true)}
+        nextDisabled={tdeNextLocked}
+        nextDisabledHint={
+          tdeNextLocked
+            ? tdeSaving
+              ? 'Saving & validating columns...'
+              : 'Click "Save Source Details & Validate Columns" first to unlock'
+            : undefined
+        }
       >
         {content}
       </Layout>

@@ -13,6 +13,8 @@ type Props = {
   onNewMigration?: () => void;
   isDemoMode?: boolean;
   onContactDemo?: () => void;
+  nextDisabled?: boolean;
+  nextDisabledHint?: string;
 };
 
 const navGroups = {
@@ -40,7 +42,7 @@ const orderedStages = [
   'Export'
 ];
 
-export default function Layout({ children, active, onNav, hasProject, onLogout, onNewMigration, isDemoMode, onContactDemo }: Props) {
+export default function Layout({ children, active, onNav, hasProject, onLogout, onNewMigration, isDemoMode, onContactDemo, nextDisabled, nextDisabledHint }: Props) {
   const [projectsMenuOpen, setProjectsMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -364,14 +366,21 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
                     <Lock size={16} /> Proceed to Export <span className="lockedPill">Locked in Demo</span>
                   </button>
                 ) : (
-                  <button 
-                    className="primary" 
-                    disabled={!canGoNext} 
-                    onClick={() => handleNav(nextStage)}
-                    style={{ padding: '12px 24px', fontSize: '15px' }}
-                  >
-                    Proceed to {nextStage} <ArrowRight size={18}/>
-                  </button>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                    <button 
+                      className={`primary ${nextDisabled ? 'stageNextLocked' : ''}`} 
+                      disabled={!canGoNext || Boolean(nextDisabled)} 
+                      onClick={() => handleNav(nextStage)}
+                      title={nextDisabled ? nextDisabledHint : undefined}
+                      style={{ padding: '12px 24px', fontSize: '15px' }}
+                    >
+                      {nextDisabled && <Lock size={16} />}
+                      Proceed to {nextStage} <ArrowRight size={18}/>
+                    </button>
+                    {nextDisabled && nextDisabledHint && (
+                      <span className="stageLockHint">{nextDisabledHint}</span>
+                    )}
+                  </div>
                 )
               )}
             </div>
