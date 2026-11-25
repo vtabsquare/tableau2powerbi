@@ -6,6 +6,7 @@ type AuthMode = 'SIGN_IN' | 'REGISTER_EMAIL' | 'VERIFY_OTP' | 'CREATE_PASSWORD';
 
 export default function Login({ onAuthenticated }: { onAuthenticated: () => void }) {
   const [mode, setMode] = useState<AuthMode>('SIGN_IN');
+  const [otpPurpose, setOtpPurpose] = useState<'register' | 'reset'>('register');
   const [username, setUsername] = useState('vtabpublicuser@gmail.com');
   const [password, setPassword] = useState('Demo@12345');
   const [regEmail, setRegEmail] = useState('');
@@ -154,6 +155,35 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
             />
           </label>
 
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 6 }}>
+            <button
+              type="button"
+              onClick={() => {
+                setOtpPurpose('reset');
+                setRegEmail(username && username !== 'vtabpublicuser@gmail.com' ? username : '');
+                setOtp('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setMode('REGISTER_EMAIL');
+                setError('');
+                setSuccessMsg('');
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                boxShadow: 'none',
+                color: '#1952a1',
+                fontWeight: 600,
+                fontSize: 12,
+                cursor: 'pointer',
+                padding: '2px 0',
+                width: 'auto'
+              }}
+            >
+              Forgot password?
+            </button>
+          </div>
+
           <button className="primary loginButton" disabled={busy} type="submit">
             {busy ? 'Signing in...' : 'Sign in to Workbench'}
           </button>
@@ -161,7 +191,16 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
           <div style={{ marginTop: 18, textAlign: 'center' }}>
             <button
               type="button"
-              onClick={() => { setMode('REGISTER_EMAIL'); setError(''); setSuccessMsg(''); }}
+              onClick={() => {
+                setOtpPurpose('register');
+                setRegEmail('');
+                setOtp('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setMode('REGISTER_EMAIL');
+                setError('');
+                setSuccessMsg('');
+              }}
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -211,9 +250,11 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
           <div className="loginIcon" style={{ background: '#e0f2fe', color: '#0284c7' }}>
             <Mail />
           </div>
-          <h2>Register new user</h2>
+          <h2>{otpPurpose === 'reset' ? 'Reset your password' : 'Register new user'}</h2>
           <p className="muted" style={{ margin: '4px 0 16px' }}>
-            Enter your email to receive a 6-digit verification OTP via Brevo.
+            {otpPurpose === 'reset'
+              ? 'Enter your registered email to receive a 6-digit verification OTP to change your password.'
+              : 'Enter your email to receive a 6-digit verification OTP via Brevo.'}
           </p>
 
           {error && <div className="error" style={{ marginBottom: 14, fontSize: 13, lineHeight: 1.45, padding: '10px 12px', borderRadius: 8 }}>{error}</div>}
@@ -316,9 +357,11 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
           <div className="loginIcon" style={{ background: '#ecfdf5', color: '#059669' }}>
             <LockKeyhole />
           </div>
-          <h2>Create password</h2>
+          <h2>{otpPurpose === 'reset' ? 'Set new password' : 'Create password'}</h2>
           <p className="muted" style={{ margin: '4px 0 16px' }}>
-            OTP verified! Set a password for future logins with <b>{regEmail}</b>.
+            {otpPurpose === 'reset'
+              ? <>OTP verified! Enter a new password for <b>{regEmail}</b>.</>
+              : <>OTP verified! Set a password for future logins with <b>{regEmail}</b>.</>}
           </p>
 
           {error && <div className="error" style={{ marginBottom: 14, fontSize: 13, lineHeight: 1.45, padding: '10px 12px', borderRadius: 8 }}>{error}</div>}
@@ -347,7 +390,7 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
           </label>
 
           <button className="primary loginButton" disabled={busy} type="submit">
-            {busy ? 'Saving & Signing in...' : 'Set Password & Enter Workbench'}
+            {busy ? 'Saving & Signing in...' : (otpPurpose === 'reset' ? 'Update Password & Enter Workbench' : 'Set Password & Enter Workbench')}
           </button>
         </form>
       )}
