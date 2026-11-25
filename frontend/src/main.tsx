@@ -256,7 +256,7 @@ function App() {
       case 'Relationships': return requireProject(<Relationships project={project!} setProject={setProject}/>);
       case 'Calculations': return requireProject(<Calculations project={project!}/>);
       case 'M Query': return requireProject(<MQuery project={project!} isDemoMode={isDemo} onContactDemo={() => setIsContactDemoModalOpen(true)}/>);
-      case 'Final Tables': return requireProject(<FinalTables project={project!}/>);
+      case 'Final Tables': return requireProject(<FinalTables project={project!} onNavigateStage={(stage) => setActive(stage)}/>);
       case 'Visual Plan': return requireProject(<VisualPlan project={project!}/>);
       case 'Validation': return requireProject(<Validation project={project!}/>);
       case 'Export': return requireProject(<ExportPage project={project!} isDemoMode={canUseDemoFlow || isAuthorizedDemoUser()} onContactDemo={() => setIsContactDemoModalOpen(true)}/>);

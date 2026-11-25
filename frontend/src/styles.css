@@ -8252,3 +8252,948 @@ button.primary:disabled {
   color: #334155 !important;
   word-break: break-word !important;
 }
+
+/* ==========================================================================
+   FINAL TABLES STAGE REDESIGN
+   ========================================================================== */
+.ftPage {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+.ftHeaderShell {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  padding: 16px 20px !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f7ff 100%) !important;
+  border: 1px solid #e6e8f2 !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04) !important;
+  flex-wrap: wrap !important;
+}
+
+.ftHeaderLeft {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.ftHeroIcon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, #ede9fe, #e0e7ff) !important;
+  color: #6d28d9 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ftEyebrow {
+  display: block !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  color: #7c3aed !important;
+  text-transform: uppercase !important;
+  margin-bottom: 2px !important;
+}
+
+.ftHeaderLeft h1 {
+  margin: 0 !important;
+  font-size: 21px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  line-height: 1.2 !important;
+}
+
+.ftHeaderLeft p {
+  margin: 3px 0 0 !important;
+  font-size: 13px !important;
+  color: #64748b !important;
+}
+
+.ftHeaderActions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-wrap: wrap !important;
+}
+
+.ftOutlineBtn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 9px 14px !important;
+  border-radius: 10px !important;
+  border: 1px solid #d7dce8 !important;
+  background: #ffffff !important;
+  color: #334155 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.ftOutlineBtn:hover {
+  border-color: #7c3aed !important;
+  color: #6d28d9 !important;
+  background: #faf8ff !important;
+}
+
+.ftPrimaryBtn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  padding: 9px 16px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  background: linear-gradient(135deg, #7c3aed, #5b21b6) !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  box-shadow: 0 6px 16px rgba(109, 40, 217, 0.25) !important;
+  transition: transform 0.15s ease !important;
+}
+
+.ftPrimaryBtn:hover {
+  transform: translateY(-1px) !important;
+}
+
+/* KPI Strip */
+.ftKpiStrip {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.ftKpiCard {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  border: 1px solid #e6e8f2 !important;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03) !important;
+}
+
+.ftKpiIcon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ftIconPurple {
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+}
+
+.ftIconBlue {
+  background: #e0f2fe !important;
+  color: #0284c7 !important;
+}
+
+.ftIconGreen {
+  background: #dcfce7 !important;
+  color: #16a34a !important;
+}
+
+.ftKpiText {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+}
+
+.ftKpiText strong {
+  font-size: 17px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.ftKpiText span {
+  font-size: 11.5px !important;
+  color: #64748b !important;
+  margin-top: 2px !important;
+}
+
+/* Master-Detail Split */
+.ftSplitLayout {
+  display: grid !important;
+  grid-template-columns: 270px minmax(0, 1fr) !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+}
+
+.ftSidebar {
+  background: #ffffff !important;
+  border: 1px solid #e6e8f2 !important;
+  border-radius: 16px !important;
+  padding: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04) !important;
+}
+
+.ftSidebarHead {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.ftSidebarHead h3 {
+  margin: 0 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+}
+
+.ftMiniBadge {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 8px !important;
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ftSearchBox {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 7px 10px !important;
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #f8fafc !important;
+  color: #94a3b8 !important;
+}
+
+.ftSearchBox input {
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  width: 100% !important;
+  font-size: 12.5px !important;
+  color: #0f172a !important;
+}
+
+.ftTableList {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+  max-height: 490px !important;
+  overflow-y: auto !important;
+  padding-right: 2px !important;
+}
+
+.ftTableItem {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  padding: 9px 10px !important;
+  border-radius: 11px !important;
+  border: 1px solid #edf0f7 !important;
+  background: #ffffff !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transition: all 0.15s ease !important;
+}
+
+.ftTableItem:hover {
+  border-color: #c4b5fd !important;
+  background: #faf8ff !important;
+}
+
+.ftTableItem.active {
+  border-color: #8b5cf6 !important;
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe) !important;
+}
+
+.ftTableItemLeft {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  min-width: 0 !important;
+}
+
+.ftTableItemIcon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 8px !important;
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ftTableItemMeta {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+}
+
+.ftTableItemMeta strong {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.ftTableItemMeta span {
+  font-size: 11px !important;
+  color: #64748b !important;
+}
+
+.ftChevron {
+  color: #94a3b8 !important;
+  flex-shrink: 0 !important;
+}
+
+.ftTableItem.active .ftChevron {
+  color: #6d28d9 !important;
+}
+
+/* Right Detail Panel */
+.ftDetailPanel {
+  background: #ffffff !important;
+  border: 1px solid #e6e8f2 !important;
+  border-radius: 16px !important;
+  padding: 16px 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  min-width: 0 !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04) !important;
+}
+
+.ftDetailHeader {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  flex-wrap: wrap !important;
+}
+
+.ftDetailTitleGroup {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.ftDetailIcon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 10px !important;
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.ftDetailTitleRow {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.ftDetailTitleRow h2 {
+  margin: 0 !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+.ftRoleTag {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 2px 9px !important;
+  border-radius: 999px !important;
+  background: #ede9fe !important;
+  color: #6d28d9 !important;
+}
+
+.ftDetailSub {
+  margin: 2px 0 0 !important;
+  font-size: 12.5px !important;
+  color: #64748b !important;
+}
+
+.ftPipe {
+  margin: 0 8px !important;
+  color: #cbd5e1 !important;
+}
+
+.ftIncludedPill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 12px !important;
+  border-radius: 999px !important;
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.ftTabBar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.ftTabBtn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 7px 13px !important;
+  border-radius: 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.ftTabBtn:hover {
+  border-color: #c4b5fd !important;
+  color: #6d28d9 !important;
+}
+
+.ftTabBtn.active {
+  background: linear-gradient(135deg, #7c3aed, #5b21b6) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.22) !important;
+}
+
+/* Columns & Measures Data Table */
+.ftTableCard {
+  border: 1px solid #e6e8f2 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: #ffffff !important;
+}
+
+.ftTableScroll {
+  overflow-x: auto !important;
+}
+
+.ftDataTable {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 12.5px !important;
+}
+
+.ftDataTable th {
+  text-align: left !important;
+  padding: 9px 12px !important;
+  background: #f8fafc !important;
+  color: #475569 !important;
+  font-weight: 700 !important;
+  font-size: 11.5px !important;
+  border-bottom: 1px solid #e6e8f2 !important;
+  white-space: nowrap !important;
+}
+
+.ftDataTable td {
+  padding: 8px 12px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #334155 !important;
+  vertical-align: middle !important;
+}
+
+.ftDataTable tbody tr:hover {
+  background: #faf8ff !important;
+}
+
+.ftNumCell {
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
+  width: 34px !important;
+}
+
+.ftBoldCell {
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  white-space: nowrap !important;
+}
+
+.ftMutedCell {
+  color: #64748b !important;
+}
+
+.ftExprCell {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 11.5px !important;
+  color: #334155 !important;
+  max-width: 210px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.ftExprWide {
+  max-width: 420px !important;
+  white-space: normal !important;
+}
+
+.ftTypePill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 2px 9px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+.ftType-text {
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+}
+
+.ftType-date {
+  background: #ede9fe !important;
+  color: #6d28d9 !important;
+}
+
+.ftType-number {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+}
+
+.ftType-bool {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+.ftKeyPill {
+  display: inline-block !important;
+  padding: 2px 9px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.ftKeyPill.yes {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+.ftKeyPill.no {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+.ftKindPill {
+  display: inline-block !important;
+  padding: 2px 10px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.ftKindPill.dimension {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+}
+
+.ftKindPill.measure {
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+}
+
+.ftConfPill {
+  display: inline-block !important;
+  padding: 2px 10px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+.ftConfPill.good {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+.ftConfPill.warn {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+}
+
+.ftPagination {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 10px 14px !important;
+  background: #f8fafc !important;
+  border-top: 1px solid #e6e8f2 !important;
+  font-size: 12px !important;
+  color: #64748b !important;
+}
+
+.ftPageControls {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.ftPageControls button {
+  min-width: 28px !important;
+  height: 28px !important;
+  padding: 0 7px !important;
+  border-radius: 7px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+.ftPageControls button.active {
+  background: #7c3aed !important;
+  border-color: #7c3aed !important;
+  color: #ffffff !important;
+}
+
+.ftPageControls button:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+}
+
+.ftSubPanel {
+  border: 1px solid #e6e8f2 !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  background: #f8fafc !important;
+}
+
+.ftSubPanel h4 {
+  margin: 0 0 10px !important;
+  font-size: 14px !important;
+  color: #0f172a !important;
+}
+
+.ftLineageList {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.ftLineageList li {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 13px !important;
+  color: #334155 !important;
+}
+
+.ftLineageList svg {
+  color: #16a34a !important;
+  flex-shrink: 0 !important;
+}
+
+.ftDepGrid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.ftDepBox {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+.ftDepBox span {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+}
+
+.ftDepBox strong {
+  font-size: 13px !important;
+  color: #0f172a !important;
+  word-break: break-all !important;
+}
+
+.ftRelMiniList {
+  margin: 4px 0 0 !important;
+  padding-left: 16px !important;
+  font-size: 12px !important;
+  color: #334155 !important;
+}
+
+.ftEmptyState,
+.ftEmptyCell,
+.ftEmptySmall {
+  padding: 24px !important;
+  text-align: center !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+}
+
+/* Bottom 3 Summary Cards */
+.ftBottomGrid {
+  display: grid !important;
+  grid-template-columns: 270px minmax(0, 1fr) minmax(0, 1.15fr) !important;
+  gap: 14px !important;
+}
+
+.ftBottomCard {
+  background: #ffffff !important;
+  border: 1px solid #e6e8f2 !important;
+  border-radius: 16px !important;
+  padding: 14px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04) !important;
+}
+
+.ftBottomHead {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.ftBottomHead h3 {
+  margin: 0 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+}
+
+.ftSummaryChecklist {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.ftSummaryChecklist li {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: #334155 !important;
+}
+
+.ftSummaryChecklist svg {
+  color: #16a34a !important;
+  flex-shrink: 0 !important;
+}
+
+.ftMiniMeasureWrap {
+  overflow-x: auto !important;
+}
+
+.ftMiniMeasureTable {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 12px !important;
+}
+
+.ftMiniMeasureTable th {
+  text-align: left !important;
+  padding: 6px 8px !important;
+  color: #64748b !important;
+  font-size: 11px !important;
+  border-bottom: 1px solid #e6e8f2 !important;
+}
+
+.ftMiniMeasureTable td {
+  padding: 7px 8px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.ftLinkAction {
+  align-self: flex-start !important;
+  background: none !important;
+  border: none !important;
+  padding: 2px 0 0 !important;
+  color: #6d28d9 !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+
+.ftLinkAction:hover {
+  text-decoration: underline !important;
+}
+
+.ftLineageGrid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr) !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+}
+
+.ftTechTable {
+  border: 1px solid #e6e8f2 !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+}
+
+.ftTechRow {
+  display: grid !important;
+  grid-template-columns: 92px minmax(0, 1fr) !important;
+  gap: 8px !important;
+  align-items: center !important;
+  padding: 7px 10px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  font-size: 12px !important;
+}
+
+.ftTechRow:last-child {
+  border-bottom: none !important;
+}
+
+.ftTechRow > span {
+  color: #64748b !important;
+  font-weight: 600 !important;
+}
+
+.ftTechRow > strong {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+.ftPathVal {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+}
+
+.ftPathVal strong {
+  color: #0f172a !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.ftIconBtn {
+  border: none !important;
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+
+.ftInlineLink {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  border: none !important;
+  background: none !important;
+  padding: 0 !important;
+  color: #6d28d9 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+
+.ftInlineLink:hover {
+  text-decoration: underline !important;
+}
+
+.ftMiniStatStack {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.ftMiniStatBox {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+  border: 1px solid #e6e8f2 !important;
+  background: #f8fafc !important;
+  flex: 1 !important;
+}
+
+.ftMiniStatIcon {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.ftMiniStatBox strong {
+  display: block !important;
+  font-size: 12.5px !important;
+  color: #0f172a !important;
+}
+
+.ftMiniStatBox span {
+  font-size: 11.5px !important;
+  color: #64748b !important;
+}
+
+@media (max-width: 1200px) {
+  .ftKpiStrip {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+  .ftSplitLayout,
+  .ftBottomGrid {
+    grid-template-columns: 1fr !important;
+  }
+  .ftLineageGrid {
+    grid-template-columns: 1fr !important;
+  }
+}
