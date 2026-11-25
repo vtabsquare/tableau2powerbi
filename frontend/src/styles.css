@@ -3987,3 +3987,450 @@ button.demoToastBtn:hover, .demoToastBtn:hover {
   color: #1e293b !important;
   line-height: 1.3 !important;
 }
+
+/* ============================================================
+   TABLEAU 360 SUMMARY REDESIGN
+   ============================================================ */
+.s360Shell {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 18px !important;
+  padding: 20px 24px !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+}
+
+.s360TopHeader,
+.s360SectionHeader {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 14px !important;
+  flex-wrap: wrap !important;
+}
+
+.s360TitleGroup {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.s360TitleIcon {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 10px !important;
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.s360TitleGroup h2 {
+  margin: 0 !important;
+  font-size: 19px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+.s360HeaderActions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-shrink: 0 !important;
+}
+
+.s360DeleteBtn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: auto !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  background: #fff5f5 !important;
+  border: 1px solid #fca5a5 !important;
+  color: #dc2626 !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  white-space: nowrap !important;
+}
+
+.s360DeleteBtn:hover:not(:disabled) {
+  background: #fee2e2 !important;
+  border-color: #f87171 !important;
+}
+
+.s360HealthPill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 13px !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+
+.s360HealthPill.good {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  border: 1px solid #86efac !important;
+}
+
+.s360HealthPill.warn {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+  border: 1px solid #fde68a !important;
+}
+
+.s360HealthPill.bad {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+  border: 1px solid #fca5a5 !important;
+}
+
+.s360SnapshotRow {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.85fr) !important;
+  gap: 16px !important;
+  align-items: stretch !important;
+}
+
+@media (max-width: 960px) {
+  .s360SnapshotRow {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.s360SnapshotLeft {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 16px !important;
+  padding: 20px 22px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #f8f5ff 0%, #ffffff 70%, #f5f3ff 100%) !important;
+  border: 1px solid #e9d5ff !important;
+}
+
+.s360SnapshotIcon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.s360SnapshotText {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  min-width: 0 !important;
+}
+
+.s360Eyebrow {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  color: #7c3aed !important;
+  text-transform: uppercase !important;
+}
+
+.s360SnapshotText h1 {
+  margin: 0 !important;
+  font-size: 26px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  line-height: 1.2 !important;
+  word-break: break-word !important;
+}
+
+.s360SnapshotText p {
+  margin: 4px 0 0 !important;
+  font-size: 13px !important;
+  color: #475569 !important;
+  line-height: 1.5 !important;
+}
+
+.s360StatusCard {
+  padding: 18px 20px !important;
+  border-radius: 14px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 6px !important;
+}
+
+.s360StatusCard.good {
+  background: #f0fdf4 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+.s360StatusCard.warn {
+  background: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+}
+
+.s360StatusCard.bad {
+  background: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+}
+
+.s360StatusCardTop {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.s360StatusCardTop b {
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+.s360StatusIcon.good { color: #16a34a !important; display: inline-flex; }
+.s360StatusIcon.warn { color: #d97706 !important; display: inline-flex; }
+.s360StatusIcon.bad { color: #dc2626 !important; display: inline-flex; }
+
+.s360StatusLine {
+  font-size: 13px !important;
+  color: #334155 !important;
+  font-weight: 500 !important;
+}
+
+.s360KpiStrip {
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+@media (max-width: 1200px) {
+  .s360KpiStrip {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .s360KpiStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+.s360KpiItem {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 12px !important;
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #fafcff !important;
+  min-width: 0 !important;
+}
+
+.s360KpiItem.purple {
+  background: #faf5ff !important;
+  border-color: #ede9fe !important;
+}
+
+.s360KpiItem.blue {
+  background: #f8fbff !important;
+  border-color: #dbeafe !important;
+}
+
+.s360KpiItem.cyan {
+  background: #f0f9ff !important;
+  border-color: #bae6fd !important;
+}
+
+.s360KpiIcon {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 9px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.s360KpiIcon.purple { background: #ede9fe !important; color: #7c3aed !important; }
+.s360KpiIcon.blue { background: #dbeafe !important; color: #2563eb !important; }
+.s360KpiIcon.cyan { background: #e0f2fe !important; color: #0284c7 !important; }
+
+.s360KpiText {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+}
+
+.s360KpiText span {
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  color: #475569 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.s360KpiText b {
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.s360TableWrap {
+  width: 100% !important;
+  overflow-x: auto !important;
+  border-radius: 12px !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+.s360HealthTable {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  min-width: 1080px !important;
+}
+
+.s360HealthTable thead th {
+  background: linear-gradient(90deg, #27297c 0%, #373a9d 100%) !important;
+  color: #ffffff !important;
+  padding: 10px 8px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+  border-bottom: none !important;
+  position: static !important;
+}
+
+.s360HealthTable thead th.s360AreaCol {
+  text-align: left !important;
+  padding-left: 14px !important;
+  min-width: 140px !important;
+}
+
+.s360ThInner {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 4px !important;
+  white-space: nowrap !important;
+}
+
+.s360HealthTable tbody td {
+  padding: 12px 8px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  text-align: center !important;
+  font-size: 13px !important;
+  color: #0f172a !important;
+  vertical-align: middle !important;
+}
+
+.s360HealthTable tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+.s360AreaCell {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  text-align: left !important;
+  padding-left: 14px !important;
+  white-space: nowrap !important;
+}
+
+.s360AreaBadge {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 7px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.s360AreaBadge.blue { background: #eff6ff !important; color: #2563eb !important; }
+.s360AreaBadge.purple { background: #f3e8ff !important; color: #7c3aed !important; }
+.s360AreaBadge.indigo { background: #eef2ff !important; color: #4f46e5 !important; }
+
+.s360NumCell {
+  font-weight: 700 !important;
+  color: #0f172a !important;
+}
+
+.s360DashCell {
+  color: #94a3b8 !important;
+}
+
+.s360CellPill {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 3px 9px !important;
+  border-radius: 7px !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+
+.s360CellPill.amber {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+.s360CellPill.slate {
+  background: #eef2ff !important;
+  color: #1e293b !important;
+}
+
+.s360CellPill.green {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+}
+
+.s360DetailSelect {
+  width: auto !important;
+  min-width: 260px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 10px !important;
+  padding: 8px 12px !important;
+  background: #ffffff !important;
+  font-weight: 600 !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+}
+
+.s360RuleCallout {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  background: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  margin-bottom: 14px !important;
+  font-size: 13px !important;
+  color: #334155 !important;
+  line-height: 1.5 !important;
+}
+
+.s360RuleIconCircle {
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 50% !important;
+  background: #f59e0b !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  margin-top: 2px !important;
+}
