@@ -24,8 +24,8 @@ import {
   ShieldCheck,
   GitBranch,
   HardDrive,
+  Target,
 } from 'lucide-react';
-import { Card, Badge } from '../components/Cards';
 import { MigrationProject, UploadModelDefinition } from '../types/project';
 
 function getModelIcon(modelId: string) {
@@ -165,58 +165,115 @@ export default function UploadModels({ project }: { project?: MigrationProject }
     );
   }, [models, query]);
 
+  const confidencePct = Math.round((detected?.confidence || 0) * 100);
+  const hasBlockers = Boolean(detected?.blocking_gaps?.length);
+
   return (
     <div className="page">
-      <Card
-        title="Detected Upload Model & Processing Route"
-        right={
-          detected?.model_name ? (
-            <Badge tone={detected.blocking_gaps?.length ? 'warn' : 'good'}>
-              {detected.stage_gate || detected.model_name}
-            </Badge>
-          ) : undefined
-        }
-      >
-        <p className="lead">
-          The application first classifies the uploaded Tableau assets, then routes them through the correct migration path. Classification is refined after Tableau XML is parsed, so database-backed workbooks are distinguished from workbook-only or file-source models.
-        </p>
+      <div className="umDetectedShell">
+        <div className="umDetectedHeader">
+          <div className="umCatalogHeaderLeft">
+            <div className="umCatalogBadgeIcon">
+              <Layers size={22} />
+            </div>
+            <div>
+              <h2>Detected Upload Model & Processing Route</h2>
+              <p>
+                The application first classifies the uploaded Tableau assets, then routes them through the correct migration path.
+              </p>
+            </div>
+          </div>
+
+          {detected?.model_name && (
+            <span className={`umStatusPill ${hasBlockers ? 'warn' : 'ready'}`}>
+              {hasBlockers ? <AlertTriangle size={15} /> : <CheckCircle2 size={15} />}
+              <span>{detected.stage_gate || 'Ready'}</span>
+            </span>
+          )}
+        </div>
+
         {detected?.model_name && (
           <>
-            <div className="detectedPanel">
-              <div>
-                <b>Detected model</b>
-                <h2>{detected.model_name}</h2>
-                <p>{detected.description}</p>
+            <div className="umDetectedGrid">
+              <div className="umKpiCard purple">
+                <div className="umKpiIcon purple">
+                  {getModelIcon(detected.model_id || 'complete_project')}
+                </div>
+                <div className="umKpiBody">
+                  <span className="umKpiLabel">Detected Model</span>
+                  <h3 className="umKpiValue">{detected.model_name}</h3>
+                  <p className="umKpiDesc">{detected.description}</p>
+                </div>
               </div>
-              <div>
-                <b>Confidence</b>
-                <h2>{Math.round((detected.confidence || 0) * 100)}%</h2>
-                <p>{detected.readiness_note}</p>
+
+              <div className="umKpiCard blue">
+                <div className="umKpiIcon cyan">
+                  <Target size={22} />
+                </div>
+                <div className="umKpiBody">
+                  <div className="umConfidenceTop">
+                    <div>
+                      <span className="umKpiLabel">Confidence</span>
+                      <h3 className="umKpiValue">{confidencePct}%</h3>
+                    </div>
+                    <div className="umProgressTrack" aria-label={`Confidence ${confidencePct}%`}>
+                      <div className="umProgressFill" style={{ width: `${Math.min(100, Math.max(0, confidencePct))}%` }} />
+                    </div>
+                  </div>
+                  <p className="umKpiDesc">{detected.readiness_note}</p>
+                </div>
               </div>
-              <div>
-                <b>Detected extensions</b>
-                <p>{(detected.detected_extensions || []).join(', ') || 'None'}</p>
+
+              <div className="umKpiCard slate">
+                <div className="umKpiIcon indigo">
+                  <FileText size={20} />
+                </div>
+                <div className="umKpiBody">
+                  <span className="umKpiLabel">Detected Extensions</span>
+                  <div className="umExtPills">
+                    {(detected.detected_extensions || []).length > 0 ? (
+                      (detected.detected_extensions || []).map((ext) => (
+                        <span key={ext} className="umExtPill">
+                          {ext}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="umKpiDesc">None</span>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div>
-                <b>Next application stage</b>
-                <h2 className="nextStageHeadline">{detected.next_stage}</h2>
-                <p>{detected.production_rule}</p>
-              </div>
-            </div>
-            <div className="detectedRoutePanel">
-              <Route size={19} />
-              <div>
-                <b>Recommended processing route</b>
-                <div className="routeSteps large">
-                  {(detected.processing_route || []).map((x, i) => (
-                    <span key={x}>
-                      {i > 0 && <ArrowRight size={14} />}
-                      <em>{x}</em>
-                    </span>
-                  ))}
+
+              <div className="umKpiCard blue">
+                <div className="umKpiIcon blue">
+                  <Layers size={20} />
+                </div>
+                <div className="umKpiBody">
+                  <span className="umKpiLabel">Next Application Stage</span>
+                  <h3 className="umKpiValue">{detected.next_stage}</h3>
+                  <p className="umKpiDesc">{detected.production_rule}</p>
                 </div>
               </div>
             </div>
+
+            <div className="umDetectedRouteBox">
+              <div className="umRouteHeader">
+                <Route size={17} className="umRouteHeaderIcon" />
+                <b>Recommended Processing Route</b>
+              </div>
+              <div className="umRoutePillFlow">
+                {(detected.processing_route || []).map((step, i) => (
+                  <div className="umRoutePillGroup" key={`${step}-${i}`}>
+                    {i > 0 && <ArrowRight size={14} className="umRoutePillArrow" />}
+                    <div className="umRoutePillCard">
+                      <span className="umRoutePillIcon">{getStepIcon(step)}</span>
+                      <span className="umRoutePillText">{step}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {!!detected.missing_information?.length && (
               <div className="gapPanel">
                 <CircleHelp size={18} />
@@ -245,7 +302,7 @@ export default function UploadModels({ project }: { project?: MigrationProject }
             )}
           </>
         )}
-      </Card>
+      </div>
 
       <div className="umCatalogShell">
         <div className="umCatalogToolbar">
