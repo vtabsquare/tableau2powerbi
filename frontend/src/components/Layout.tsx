@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect, useRef } from 'react';
 import { 
-  DatabaseZap, ShieldCheck, ArrowUp, ArrowRight, LogOut, User,
+  DatabaseZap, ShieldCheck, ArrowUp, ArrowRight, ArrowLeft, LogOut, User,
   ChevronDown, Menu, Lock
 } from 'lucide-react';
 
@@ -125,6 +125,8 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
   };
 
   const currentIdx = orderedStages.indexOf(active);
+  const prevStage = currentIdx > 0 ? orderedStages[currentIdx - 1] : null;
+  const canGoPrev = prevStage && (hasProject || ['Landing', 'Upload', 'Upload Models'].includes(prevStage));
   const nextStage = currentIdx >= 0 && currentIdx < orderedStages.length - 1 ? orderedStages[currentIdx + 1] : null;
   const canGoNext = nextStage && (hasProject || ['Upload', 'Upload Models'].includes(nextStage));
 
@@ -336,26 +338,41 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
         <div className="pageContentWrapper">
           {children}
           
-          {nextStage && (
-            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid #E2E8F0', paddingTop: '24px' }}>
-              {nextStage === 'Export' && isDemoMode ? (
-                <button 
+          {(prevStage || nextStage) && (
+            <div className="stageFooterNav">
+              {prevStage ? (
+                <button
                   type="button"
-                  className="primary lockedDemoBtn" 
-                  onClick={() => { if (onContactDemo) onContactDemo(); }}
-                  style={{ padding: '12px 24px', fontSize: '15px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                  className="stageBackBtn"
+                  disabled={!canGoPrev}
+                  onClick={() => handleNav(prevStage)}
                 >
-                  <Lock size={16} /> Proceed to Export <span className="lockedPill">Locked in Demo</span>
+                  <ArrowLeft size={18} /> Back to {prevStage}
                 </button>
               ) : (
-                <button 
-                  className="primary" 
-                  disabled={!canGoNext} 
-                  onClick={() => handleNav(nextStage)}
-                  style={{ padding: '12px 24px', fontSize: '15px' }}
-                >
-                  Proceed to {nextStage} <ArrowRight size={18}/>
-                </button>
+                <div />
+              )}
+
+              {nextStage && (
+                nextStage === 'Export' && isDemoMode ? (
+                  <button 
+                    type="button"
+                    className="primary lockedDemoBtn" 
+                    onClick={() => { if (onContactDemo) onContactDemo(); }}
+                    style={{ padding: '12px 24px', fontSize: '15px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    <Lock size={16} /> Proceed to Export <span className="lockedPill">Locked in Demo</span>
+                  </button>
+                ) : (
+                  <button 
+                    className="primary" 
+                    disabled={!canGoNext} 
+                    onClick={() => handleNav(nextStage)}
+                    style={{ padding: '12px 24px', fontSize: '15px' }}
+                  >
+                    Proceed to {nextStage} <ArrowRight size={18}/>
+                  </button>
+                )
               )}
             </div>
           )}
