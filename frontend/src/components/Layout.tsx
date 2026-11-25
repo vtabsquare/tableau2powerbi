@@ -63,10 +63,13 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const userEmail = typeof window !== 'undefined' 
-    ? (sessionStorage.getItem('t2pbi_user_email') || 'balamuraleee@gmail.com') 
-    : 'balamuraleee@gmail.com';
-  const userName = userEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Administrator';
+  const storedEmail = typeof window !== 'undefined' ? sessionStorage.getItem('t2pbi_user_email') : null;
+  const userEmail = isDemoMode
+    ? 'vtabpublicuser@gmail.com'
+    : (storedEmail || 'vtabpublicuser@gmail.com');
+  const userName = isDemoMode
+    ? 'Demo User'
+    : (userEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Workbench User');
 
   // Demo Version Only: Dynamic visibility based on 300px scroll threshold
   useEffect(() => {
@@ -267,7 +270,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
                   <div className="profileInfo">
                     <div className="profileNameRow">
                       <b>{userName}</b>
-                      <span className="profileRoleBadge">Admin</span>
+                      <span className="profileRoleBadge">{isDemoMode ? 'Demo' : 'Enterprise'}</span>
                     </div>
                     <span className="profileEmail">{userEmail}</span>
                   </div>

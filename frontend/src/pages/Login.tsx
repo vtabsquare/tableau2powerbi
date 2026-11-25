@@ -90,6 +90,7 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
     try {
       await createPassword(regEmail, otp, newPassword);
       sessionStorage.setItem('t2pbi_authenticated', 'true');
+      sessionStorage.setItem('t2pbi_user_email', regEmail.trim().toLowerCase());
       onAuthenticated();
     } catch (err) {
       setError((err as Error).message);
