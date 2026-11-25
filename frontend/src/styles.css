@@ -7439,7 +7439,7 @@ button.primary:disabled {
    ============================================================ */
 .calcSplitLayout {
   display: grid !important;
-  grid-template-columns: 400px minmax(0, 1fr) !important;
+  grid-template-columns: 500px minmax(0, 1fr) !important;
   gap: 18px !important;
   align-items: stretch !important;
 }
@@ -7622,7 +7622,7 @@ button.primary:disabled {
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
-  max-width: 165px !important;
+  max-width: 250px !important;
 }
 
 .calcTypePill {
