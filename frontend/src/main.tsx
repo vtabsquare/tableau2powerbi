@@ -51,6 +51,8 @@ function App() {
   const [project, setProject] = useState<MigrationProject>();
   const [tdeValidatedProjectId, setTdeValidatedProjectId] = useState<string | null>(null);
   const [tdeSaving, setTdeSaving] = useState(false);
+  const [sourceMappingAppliedProjectId, setSourceMappingAppliedProjectId] = useState<string | null>(null);
+  const [sourceMappingSaving, setSourceMappingSaving] = useState(false);
   const [ssoLoading, setSsoLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -242,7 +244,14 @@ function App() {
         />
       );
       case 'Source Overview': return requireProject(<SourceOverview project={project!}/>);
-      case 'Source Mapping': return requireProject(<SourceMapping project={project!} setProject={setProject}/>);
+      case 'Source Mapping': return requireProject(
+        <SourceMapping
+          project={project!}
+          setProject={setProject}
+          onSavingChange={setSourceMappingSaving}
+          onSaved={() => setSourceMappingAppliedProjectId(project?.project_id || null)}
+        />
+      );
       case 'Preview & Types': return requireProject(<PreviewTypes project={project!}/>);
       case 'Relationships': return requireProject(<Relationships project={project!} setProject={setProject}/>);
       case 'Calculations': return requireProject(<Calculations project={project!}/>);
@@ -261,6 +270,16 @@ function App() {
   const tdeNextLocked =
     active === 'TDE Source Recovery' &&
     (tdeSaving || !project || tdeValidatedProjectId !== project.project_id);
+  const sourceMappingNextLocked =
+    active === 'Source Mapping' &&
+    (sourceMappingSaving || !project || sourceMappingAppliedProjectId !== project.project_id);
+
+  const nextDisabled = tdeNextLocked || sourceMappingNextLocked;
+  const nextDisabledHint = tdeNextLocked
+    ? (tdeSaving ? 'Saving & validating columns...' : 'Click "Save Source Details & Validate Columns" first to unlock')
+    : sourceMappingNextLocked
+    ? (sourceMappingSaving ? 'Saving & regenerating M...' : 'Click "Apply & Regenerate M" first to unlock')
+    : undefined;
 
   return (
     <>
@@ -272,14 +291,8 @@ function App() {
         onNewMigration={handleNewMigration}
         isDemoMode={isDemo}
         onContactDemo={() => setIsContactDemoModalOpen(true)}
-        nextDisabled={tdeNextLocked}
-        nextDisabledHint={
-          tdeNextLocked
-            ? tdeSaving
-              ? 'Saving & validating columns...'
-              : 'Click "Save Source Details & Validate Columns" first to unlock'
-            : undefined
-        }
+        nextDisabled={nextDisabled}
+        nextDisabledHint={nextDisabledHint}
       >
         {content}
       </Layout>

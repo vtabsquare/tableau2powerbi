@@ -9,7 +9,17 @@ function isExtractLike(m: SourceMappingType) {
   return `${m.original_connection_type} ${m.detected_source_path} ${m.target_file_path} ${m.datasource} ${m.mapping_status}`.toLowerCase().includes('.tde') || `${m.original_connection_type} ${m.detected_source_path} ${m.target_file_path} ${m.datasource} ${m.mapping_status}`.toLowerCase().includes('.hyper') || `${m.mapping_status}`.toLowerCase().includes('extract');
 }
 
-export default function SourceMapping({ project, setProject }: {project: MigrationProject; setProject: (p: MigrationProject) => void}) {
+export default function SourceMapping({
+  project,
+  setProject,
+  onSavingChange,
+  onSaved,
+}: {
+  project: MigrationProject;
+  setProject: (p: MigrationProject) => void;
+  onSavingChange?: (saving: boolean) => void;
+  onSaved?: () => void;
+}) {
   const [mappings, setMappings] = useState<SourceMappingType[]>(project.source_mappings);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -23,10 +33,19 @@ export default function SourceMapping({ project, setProject }: {project: Migrati
     setMappings(mappings.filter(m => m.source_id !== sourceId));
   }
   async function save() {
-    setBusy(true); setError(undefined);
-    try { setProject(await saveSourceMappings(project.project_id, mappings)); }
-    catch (e) { setError((e as Error).message); }
-    finally { setBusy(false); }
+    setBusy(true);
+    onSavingChange?.(true);
+    setError(undefined);
+    try {
+      const updated = await saveSourceMappings(project.project_id, mappings);
+      setProject(updated);
+      onSaved?.();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+      onSavingChange?.(false);
+    }
   }
   const filtered = useMemo(() => {
     const nonExtracts = mappings.filter(m => !isExtractLike(m));
