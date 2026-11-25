@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Link2,
   Plus,
@@ -16,12 +16,111 @@ import {
   BarChart3,
   Edit3,
   Trash2,
+  RotateCcw,
 } from 'lucide-react';
 import { Badge } from '../components/Cards';
 import { MigrationProject, Relationship, SemanticTable } from '../types/project';
 import { saveRelationships } from '../services/api';
 
 type RelTab = 'diagram' | 'list' | 'tables' | 'properties';
+type NodePos = { x: number; y: number };
+
+const CARD_W = 216;
+const CARD_H = 196;
+const GAP_X = 96;
+const GAP_Y = 74;
+
+function computeInitialPositions(tables: SemanticTable[], rels: Relationship[]): Record<string, NodePos> {
+  const positions: Record<string, NodePos> = {};
+  if (!tables.length) return positions;
+
+  // Build adjacency & degree
+  const adj = new Map<string, Set<string>>();
+  const degree = new Map<string, number>();
+  tables.forEach(t => {
+    adj.set(t.name, new Set());
+    degree.set(t.name, 0);
+  });
+  rels.forEach(r => {
+    if (adj.has(r.from_table) && adj.has(r.to_table) && r.from_table !== r.to_table) {
+      adj.get(r.from_table)!.add(r.to_table);
+      adj.get(r.to_table)!.add(r.from_table);
+      degree.set(r.from_table, (degree.get(r.from_table) || 0) + 1);
+      degree.set(r.to_table, (degree.get(r.to_table) || 0) + 1);
+    }
+  });
+
+  // Find connected components
+  const visited = new Set<string>();
+  const components: SemanticTable[][] = [];
+  const standalone: SemanticTable[] = [];
+
+  tables.forEach(t => {
+    if (visited.has(t.name)) return;
+    if ((adj.get(t.name)?.size || 0) === 0) {
+      visited.add(t.name);
+      standalone.push(t);
+      return;
+    }
+    const comp: SemanticTable[] = [];
+    const queue = [t.name];
+    visited.add(t.name);
+    while (queue.length) {
+      const curr = queue.shift()!;
+      const tbl = tables.find(x => x.name === curr);
+      if (tbl) comp.push(tbl);
+      adj.get(curr)?.forEach(nxt => {
+        if (!visited.has(nxt)) {
+          visited.add(nxt);
+          queue.push(nxt);
+        }
+      });
+    }
+    components.push(comp);
+  });
+
+  // Sort components largest first
+  components.sort((a, b) => b.length - a.length);
+
+  let cursorY = 28;
+  const maxCols = 4;
+
+  // Layout each connected component in clean rows with hub-centered ordering
+  components.forEach(comp => {
+    const sorted = [...comp].sort((a, b) => (degree.get(b.name) || 0) - (degree.get(a.name) || 0));
+    // Place hub in middle of row if 3+ items for cleaner lines
+    const colsCount = Math.min(maxCols, Math.max(2, Math.ceil(Math.sqrt(sorted.length * 1.4))));
+    if (sorted.length >= 3) {
+      const hub = sorted.shift()!;
+      const midIdx = Math.floor(Math.min(colsCount, sorted.length + 1) / 2);
+      sorted.splice(midIdx, 0, hub);
+    }
+    sorted.forEach((t, idx) => {
+      const col = idx % colsCount;
+      const row = Math.floor(idx / colsCount);
+      positions[t.name] = {
+        x: 28 + col * (CARD_W + GAP_X),
+        y: cursorY + row * (CARD_H + GAP_Y),
+      };
+    });
+    const rowsUsed = Math.ceil(sorted.length / colsCount);
+    cursorY += rowsUsed * (CARD_H + GAP_Y);
+  });
+
+  // Layout standalone tables neatly below
+  if (standalone.length) {
+    standalone.forEach((t, idx) => {
+      const col = idx % maxCols;
+      const row = Math.floor(idx / maxCols);
+      positions[t.name] = {
+        x: 28 + col * (CARD_W + GAP_X),
+        y: cursorY + row * (CARD_H + GAP_Y),
+      };
+    });
+  }
+
+  return positions;
+}
 
 export default function Relationships({ project, setProject }: { project: MigrationProject; setProject: (p: MigrationProject) => void }) {
   const finalTables = useMemo(() => project.semantic_tables.filter(t => t.include_in_export), [project.semantic_tables]);
@@ -38,13 +137,21 @@ export default function Relationships({ project, setProject }: { project: Migrat
   const [tableSearch, setTableSearch] = useState('');
   const [selectedTableName, setSelectedTableName] = useState<string>('');
   const [selectedRelId, setSelectedRelId] = useState<string>('');
-  const [zoom, setZoom] = useState(1);
+  const [zoom, setZoom] = useState(0.85);
+  const [nodePositions, setNodePositions] = useState<Record<string, NodePos>>({});
+  const dragRef = useRef<{ name: string; startX: number; startY: number; origX: number; origY: number } | null>(null);
+  const canvasViewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setRels(initial);
   }, [project.project_id, initial]);
 
-  // Pick default focal (fact) table: the table with most outgoing/total relationships
+  // Compute initial positions for all tables
+  useEffect(() => {
+    setNodePositions(computeInitialPositions(finalTables, rels));
+  }, [project.project_id, finalTables.length]);
+
+  // Pick default selected table
   useEffect(() => {
     if (!finalTables.length) return;
     if (selectedTableName && finalTables.some(t => t.name === selectedTableName)) return;
@@ -57,16 +164,78 @@ export default function Relationships({ project, setProject }: { project: Migrat
     if (best) setSelectedTableName(best.name);
   }, [finalTables, rels, selectedTableName]);
 
+  // Helper: select a table AND sync the Selected Relationship panel to that table's relationships
+  function selectTable(name: string) {
+    setSelectedTableName(name);
+    const matching = rels.find(r => r.from_table === name || r.to_table === name);
+    setSelectedRelId(matching ? matching.id : '');
+  }
+
+  // Keep selectedRelId valid if rels change
   useEffect(() => {
     if (!rels.length) {
       setSelectedRelId('');
       return;
     }
-    if (!selectedRelId || !rels.some(r => r.id === selectedRelId)) {
-      const matching = rels.find(r => r.from_table === selectedTableName || r.to_table === selectedTableName) || rels[0];
-      setSelectedRelId(matching.id);
+    if (selectedRelId && !rels.some(r => r.id === selectedRelId)) {
+      const matching = rels.find(r => r.from_table === selectedTableName || r.to_table === selectedTableName);
+      setSelectedRelId(matching ? matching.id : '');
     }
   }, [rels, selectedRelId, selectedTableName]);
+
+  const canvasBounds = useMemo(() => {
+    const vals = Object.values(nodePositions);
+    if (!vals.length) return { width: 900, height: 520 };
+    const maxX = Math.max(...vals.map(p => p.x)) + CARD_W + 40;
+    const maxY = Math.max(...vals.map(p => p.y)) + CARD_H + 40;
+    return { width: Math.max(760, maxX), height: Math.max(460, maxY) };
+  }, [nodePositions]);
+
+  function fitToView() {
+    const el = canvasViewportRef.current;
+    if (!el) {
+      setZoom(0.85);
+      return;
+    }
+    const availW = Math.max(320, el.clientWidth - 24);
+    const availH = Math.max(320, el.clientHeight - 24);
+    const ratio = Math.min(1, availW / canvasBounds.width, availH / canvasBounds.height);
+    setZoom(Math.max(0.45, +ratio.toFixed(2)));
+  }
+
+  // Auto-fit once positions are computed
+  useEffect(() => {
+    if (activeTab === 'diagram') {
+      const timer = setTimeout(fitToView, 60);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, canvasBounds.width, canvasBounds.height]);
+
+  function onNodeMouseDown(e: React.MouseEvent, name: string) {
+    e.stopPropagation();
+    selectTable(name);
+    const pos = nodePositions[name] || { x: 24, y: 24 };
+    dragRef.current = { name, startX: e.clientX, startY: e.clientY, origX: pos.x, origY: pos.y };
+
+    const handleMove = (ev: MouseEvent) => {
+      if (!dragRef.current) return;
+      const dx = (ev.clientX - dragRef.current.startX) / zoom;
+      const dy = (ev.clientY - dragRef.current.startY) / zoom;
+      const nx = Math.max(12, Math.round(dragRef.current.origX + dx));
+      const ny = Math.max(12, Math.round(dragRef.current.origY + dy));
+      const targetName = dragRef.current.name;
+      setNodePositions(prev => ({ ...prev, [targetName]: { x: nx, y: ny } }));
+    };
+
+    const handleUp = () => {
+      dragRef.current = null;
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleUp);
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleUp);
+  }
 
   function update(i: number, key: keyof Relationship, value: string | boolean) {
     const copy = [...rels];
@@ -80,7 +249,7 @@ export default function Relationships({ project, setProject }: { project: Migrat
       ...rels,
       {
         id,
-        from_table: '',
+        from_table: selectedTableName || '',
         from_column: '',
         to_table: '',
         to_column: '',
@@ -114,41 +283,15 @@ export default function Relationships({ project, setProject }: { project: Migrat
     return finalTables.filter(t => t.name.toLowerCase().includes(q));
   }, [finalTables, tableSearch]);
 
-  const focalTable: SemanticTable | undefined = useMemo(
-    () => finalTables.find(t => t.name === selectedTableName) || finalTables[0],
-    [finalTables, selectedTableName]
-  );
-
-  // Relationships connected to the focal table
-  const focalRels = useMemo(() => {
-    if (!focalTable) return [];
-    return rels.filter(r => r.from_table === focalTable.name || r.to_table === focalTable.name);
-  }, [rels, focalTable]);
-
-  // Connected neighbor tables (up to 6 arranged neatly on left & right of focal table)
-  const neighborNodes = useMemo(() => {
-    if (!focalTable) return [];
-    const seen = new Set<string>();
-    const list: { table: SemanticTable; rel: Relationship; isFromFocal: boolean }[] = [];
-    focalRels.forEach(r => {
-      const isFromFocal = r.from_table === focalTable.name;
-      const otherName = isFromFocal ? r.to_table : r.from_table;
-      if (otherName === focalTable.name || seen.has(otherName)) return;
-      const tbl = finalTables.find(t => t.name === otherName);
-      if (tbl) {
-        seen.add(otherName);
-        list.push({ table: tbl, rel: r, isFromFocal });
-      }
-    });
-    return list;
-  }, [focalTable, focalRels, finalTables]);
-
-  const leftNeighbors = neighborNodes.filter((_, i) => i % 2 === 0).slice(0, 3);
-  const rightNeighbors = neighborNodes.filter((_, i) => i % 2 === 1).slice(0, 3);
+  // Relationships connected to the currently selected table
+  const selectedTableRels = useMemo(() => {
+    if (!selectedTableName) return [];
+    return rels.filter(r => r.from_table === selectedTableName || r.to_table === selectedTableName);
+  }, [rels, selectedTableName]);
 
   const selectedRel = useMemo(
-    () => rels.find(r => r.id === selectedRelId) || focalRels[0] || rels[0] || null,
-    [rels, selectedRelId, focalRels]
+    () => rels.find(r => r.id === selectedRelId) || null,
+    [rels, selectedRelId]
   );
 
   const keyColsSet = useMemo(() => {
@@ -160,15 +303,25 @@ export default function Relationships({ project, setProject }: { project: Migrat
     return s;
   }, [rels]);
 
-  function renderTableNode(table: SemanticTable, isFact: boolean) {
-    const visibleCols = table.columns.slice(0, 6);
-    const visibleMeasures = table.measures.slice(0, 3);
+  const factTablesSet = useMemo(() => {
+    const s = new Set<string>();
+    rels.forEach(r => {
+      if (r.from_table) s.add(r.from_table);
+    });
+    return s;
+  }, [rels]);
+
+  function renderTableNode(table: SemanticTable) {
+    const isSelected = selectedTableName === table.name;
+    const isFact = factTablesSet.has(table.name);
+    const visibleCols = table.columns.slice(0, 5);
+    const visibleMeasures = table.measures.slice(0, 2);
     const extraCount = Math.max(0, table.columns.length - visibleCols.length) + Math.max(0, table.measures.length - visibleMeasures.length);
 
     return (
       <div
-        className={`relNodeCard ${isFact ? 'fact' : 'dim'}`}
-        onClick={() => setSelectedTableName(table.name)}
+        className={`relNodeCard ${isFact ? 'fact' : 'dim'} ${isSelected ? 'selectedNode' : ''}`}
+        onMouseDown={e => onNodeMouseDown(e, table.name)}
       >
         <div className={`relNodeHeader ${isFact ? 'fact' : 'dim'}`}>
           <Table2 size={14} />
@@ -245,7 +398,7 @@ export default function Relationships({ project, setProject }: { project: Migrat
               key={t.name}
               className={`relTableChip ${selectedTableName === t.name ? 'active' : ''}`}
               onClick={() => {
-                setSelectedTableName(t.name);
+                selectTable(t.name);
                 setActiveTab('diagram');
               }}
             >
@@ -296,7 +449,7 @@ export default function Relationships({ project, setProject }: { project: Migrat
           </button>
         </div>
 
-        {/* TAB 1: MODEL DIAGRAM */}
+        {/* TAB 1: FULL ALL-TABLES POWER BI MODEL DIAGRAM */}
         {activeTab === 'diagram' && (
           <div className="relDiagramGrid">
             {/* LEFT TABLES LIST */}
@@ -319,7 +472,7 @@ export default function Relationships({ project, setProject }: { project: Migrat
                     type="button"
                     key={t.name}
                     className={`relSideItem ${selectedTableName === t.name ? 'active' : ''}`}
-                    onClick={() => setSelectedTableName(t.name)}
+                    onClick={() => selectTable(t.name)}
                   >
                     <Table2 size={15} className="relPurpleIcon" />
                     <span title={t.name}>{t.name}</span>
@@ -328,81 +481,132 @@ export default function Relationships({ project, setProject }: { project: Migrat
               </div>
             </div>
 
-            {/* CENTER DIAGRAM CANVAS */}
+            {/* CENTER ALL-TABLES CANVAS */}
             <div className="relCanvasShell">
               <div className="relCanvasControls">
-                <button type="button" onClick={() => setZoom(1)} title="Reset view"><Maximize2 size={14} /></button>
+                <button type="button" onClick={fitToView} title="Fit all tables to view"><Maximize2 size={14} /></button>
                 <button type="button" onClick={() => setZoom(z => Math.min(1.25, +(z + 0.1).toFixed(2)))} title="Zoom in"><ZoomIn size={14} /></button>
-                <button type="button" onClick={() => setZoom(z => Math.max(0.75, +(z - 0.1).toFixed(2)))} title="Zoom out"><ZoomOut size={14} /></button>
+                <button type="button" onClick={() => setZoom(z => Math.max(0.4, +(z - 0.1).toFixed(2)))} title="Zoom out"><ZoomOut size={14} /></button>
+                <button type="button" onClick={() => setNodePositions(computeInitialPositions(finalTables, rels))} title="Reset layout"><RotateCcw size={14} /></button>
               </div>
 
-              {focalTable ? (
-                <div className="relCanvasStage" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
-                  <div className="relStarColumns">
-                    {/* Left Neighbors */}
-                    <div className="relNeighborCol">
-                      {leftNeighbors.map(({ table, rel, isFromFocal }) => (
-                        <div className="relNeighborSlot" key={table.name}>
-                          {renderTableNode(table, false)}
-                          <button
-                            type="button"
-                            className={`relEdgeBadge ${selectedRel?.id === rel.id ? 'active' : ''}`}
-                            onClick={() => setSelectedRelId(rel.id)}
-                            title={`${rel.from_table}.${rel.from_column} → ${rel.to_table}.${rel.to_column}`}
-                          >
-                            <span>{isFromFocal ? '1' : '*'}</span>
-                            <span className="relEdgeLine" />
-                            <span>{isFromFocal ? '*' : '1'}</span>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+              <div className="relCanvasViewport" ref={canvasViewportRef}>
+                {finalTables.length > 0 ? (
+                  <div
+                    className="relCanvasWorld"
+                    style={{
+                      width: canvasBounds.width * zoom,
+                      height: canvasBounds.height * zoom,
+                    }}
+                  >
+                    <div
+                      className="relCanvasScaled"
+                      style={{
+                        width: canvasBounds.width,
+                        height: canvasBounds.height,
+                        transform: `scale(${zoom})`,
+                        transformOrigin: 'top left',
+                      }}
+                    >
+                      {/* SVG CONNECTOR LINES FOR ALL RELATIONSHIPS */}
+                      <svg className="relSvgLayer" width={canvasBounds.width} height={canvasBounds.height}>
+                        {rels.map(r => {
+                          const p1 = nodePositions[r.from_table];
+                          const p2 = nodePositions[r.to_table];
+                          if (!p1 || !p2) return null;
 
-                    {/* Center Focal Table */}
-                    <div className="relCenterCol">
-                      {renderTableNode(focalTable, true)}
-                      {neighborNodes.length === 0 && (
-                        <div className="relNoEdgesHint">
-                          No active relationships linked to <b>{focalTable.name}</b>.
-                        </div>
-                      )}
-                    </div>
+                          const c1x = p1.x + CARD_W / 2;
+                          const c1y = p1.y + CARD_H / 2;
+                          const c2x = p2.x + CARD_W / 2;
+                          const c2y = p2.y + CARD_H / 2;
+                          const dx = c2x - c1x;
+                          const dy = c2y - c1y;
 
-                    {/* Right Neighbors */}
-                    <div className="relNeighborCol">
-                      {rightNeighbors.map(({ table, rel, isFromFocal }) => (
-                        <div className="relNeighborSlot reverse" key={table.name}>
-                          <button
-                            type="button"
-                            className={`relEdgeBadge ${selectedRel?.id === rel.id ? 'active' : ''}`}
-                            onClick={() => setSelectedRelId(rel.id)}
-                            title={`${rel.from_table}.${rel.from_column} → ${rel.to_table}.${rel.to_column}`}
+                          let x1 = c1x;
+                          let y1 = c1y;
+                          let x2 = c2x;
+                          let y2 = c2y;
+
+                          if (Math.abs(dx) >= Math.abs(dy)) {
+                            x1 = dx >= 0 ? p1.x + CARD_W : p1.x;
+                            x2 = dx >= 0 ? p2.x : p2.x + CARD_W;
+                          } else {
+                            y1 = dy >= 0 ? p1.y + CARD_H : p1.y;
+                            y2 = dy >= 0 ? p2.y : p2.y + CARD_H;
+                          }
+
+                          const midX = (x1 + x2) / 2;
+                          const midY = (y1 + y2) / 2;
+                          const pathD = Math.abs(dx) >= Math.abs(dy)
+                            ? `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`
+                            : `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+
+                          const isHighlighted =
+                            selectedRel?.id === r.id ||
+                            r.from_table === selectedTableName ||
+                            r.to_table === selectedTableName;
+                          const isActiveRel = selectedRel?.id === r.id;
+
+                          const fromLabel = r.cardinality === 'One-to-one' ? '1' : '*';
+                          const toLabel = '1';
+
+                          const lbl1X = x1 + (x2 - x1) * 0.14;
+                          const lbl1Y = y1 + (y2 - y1) * 0.14;
+                          const lbl2X = x2 - (x2 - x1) * 0.14;
+                          const lbl2Y = y2 - (y2 - y1) * 0.14;
+
+                          return (
+                            <g
+                              key={r.id}
+                              className={`relSvgEdge ${isActiveRel ? 'active' : isHighlighted ? 'highlighted' : 'dimmed'}`}
+                              onClick={() => {
+                                setSelectedRelId(r.id);
+                                if (r.from_table) setSelectedTableName(r.from_table);
+                              }}
+                            >
+                              <path d={pathD} className="relEdgeHit" />
+                              <path d={pathD} className="relEdgeStroke" />
+                              <circle cx={lbl1X} cy={lbl1Y} r={10} className="relCardCircle" />
+                              <text x={lbl1X} y={lbl1Y + 4} textAnchor="middle" className="relCardText">{fromLabel}</text>
+                              <circle cx={lbl2X} cy={lbl2Y} r={10} className="relCardCircle" />
+                              <text x={lbl2X} y={lbl2Y + 4} textAnchor="middle" className="relCardText">{toLabel}</text>
+                            </g>
+                          );
+                        })}
+                      </svg>
+
+                      {/* ALL TABLE NODES */}
+                      {finalTables.map(t => {
+                        const pos = nodePositions[t.name] || { x: 24, y: 24 };
+                        return (
+                          <div
+                            key={t.name}
+                            className="relAbsNode"
+                            style={{ left: pos.x, top: pos.y, width: CARD_W }}
                           >
-                            <span>{isFromFocal ? '*' : '1'}</span>
-                            <span className="relEdgeLine" />
-                            <span>{isFromFocal ? '1' : '*'}</span>
-                          </button>
-                          {renderTableNode(table, false)}
-                        </div>
-                      ))}
+                            {renderTableNode(t)}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="empty">No tables in semantic model.</div>
-              )}
+                ) : (
+                  <div className="empty">No tables in semantic model.</div>
+                )}
+              </div>
 
               <div className="relLegendBar">
                 <div className="relLegendItems">
                   <span className="relLegendLabel">Legend:</span>
-                  <span className="relLegendTag"><span className="relLegendSwatch fact" /> Focal Table</span>
-                  <span className="relLegendTag"><span className="relLegendSwatch dim" /> Related Table ({neighborNodes.length})</span>
-                  <span className="relLegendTag"><span className="relLegendLineSwatch" /> Relationship</span>
+                  <span className="relLegendTag"><span className="relLegendSwatch fact" /> Fact / Source Table</span>
+                  <span className="relLegendTag"><span className="relLegendSwatch dim" /> Dimension Table</span>
+                  <span className="relLegendTag"><span className="relLegendLineSwatch" /> Relationship ({rels.length})</span>
                   <span className="relLegendTag"><span className="relCardChip">1</span> One</span>
                   <span className="relLegendTag"><span className="relCardChip">*</span> Many</span>
+                  <span className="relLegendLabel">Tip: Drag tables to arrange</span>
                 </div>
-                <button type="button" className="relFitBtn" onClick={() => setZoom(1)}>
-                  <Maximize2 size={13} /> Fit to View
+                <button type="button" className="relFitBtn" onClick={fitToView}>
+                  <Maximize2 size={13} /> Fit to View ({Math.round(zoom * 100)}%)
                 </button>
               </div>
             </div>
@@ -412,8 +616,31 @@ export default function Relationships({ project, setProject }: { project: Migrat
               <div className="relInspectorCard">
                 <div className="relInspectorHead">
                   <Link2 size={16} className="relPurpleIcon" />
-                  <b>Selected Relationship</b>
+                  <b>Selected Table & Relationship</b>
                 </div>
+
+                <div className="relSelectedTableBanner">
+                  <span>Selected Table:</span>
+                  <b><Table2 size={13} className="relPurpleIcon" /> {selectedTableName || 'None'}</b>
+                </div>
+
+                {selectedTableRels.length > 0 && (
+                  <div className="relTableRelChips">
+                    <span className="relMiniCaption">Relationships for {selectedTableName} ({selectedTableRels.length}):</span>
+                    <div className="relRelPillList">
+                      {selectedTableRels.map(r => (
+                        <button
+                          key={r.id}
+                          type="button"
+                          className={`relRelSelectPill ${selectedRel?.id === r.id ? 'active' : ''}`}
+                          onClick={() => setSelectedRelId(r.id)}
+                        >
+                          {r.from_table} → {r.to_table}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {selectedRel ? (
                   <>
@@ -443,7 +670,12 @@ export default function Relationships({ project, setProject }: { project: Migrat
                     </div>
                   </>
                 ) : (
-                  <div className="muted" style={{ fontSize: 12.5 }}>No relationships configured yet. Click "+ Add relationship" to create one.</div>
+                  <div className="relNoRelBox">
+                    <span>No relationships connected to <b>{selectedTableName || 'this table'}</b>.</span>
+                    <button type="button" className="relMiniBtn" onClick={add}>
+                      <Plus size={13} /> Add relationship
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -453,7 +685,7 @@ export default function Relationships({ project, setProject }: { project: Migrat
                   <b>Model Summary</b>
                 </div>
                 <ul className="relSummaryList">
-                  <li><CheckCircle2 size={15} /> <span>{finalTables.length} tables configured</span></li>
+                  <li><CheckCircle2 size={15} /> <span>{finalTables.length} tables in diagram</span></li>
                   <li><CheckCircle2 size={15} /> <span>{rels.length} relationships ({rels.length ? 'all valid' : 'none'})</span></li>
                   <li><CheckCircle2 size={15} /> <span>Single cross-filter direction</span></li>
                   <li><CheckCircle2 size={15} /> <span>Ambiguous paths prevented</span></li>

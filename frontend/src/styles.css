@@ -7257,3 +7257,179 @@ button.primary:disabled {
   font-weight: 800 !important;
   color: #0f172a !important;
 }
+
+/* ============================================================
+   ALL-TABLES POWER BI MODEL CANVAS & INSPECTOR ADDITIONS
+   ============================================================ */
+.relCanvasViewport {
+  flex: 1 !important;
+  overflow: auto !important;
+  min-height: 460px !important;
+  max-height: 640px !important;
+  position: relative !important;
+}
+
+.relCanvasWorld {
+  position: relative !important;
+}
+
+.relCanvasScaled {
+  position: relative !important;
+}
+
+.relSvgLayer {
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+.relSvgEdge {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.relEdgeHit {
+  fill: none !important;
+  stroke: transparent !important;
+  stroke-width: 14px !important;
+}
+
+.relEdgeStroke {
+  fill: none !important;
+  stroke: #94a3b8 !important;
+  stroke-width: 2px !important;
+  transition: stroke 0.15s ease, stroke-width 0.15s ease !important;
+}
+
+.relSvgEdge.highlighted .relEdgeStroke {
+  stroke: #7c3aed !important;
+  stroke-width: 2.5px !important;
+}
+
+.relSvgEdge.active .relEdgeStroke {
+  stroke: #4f46e5 !important;
+  stroke-width: 3.5px !important;
+}
+
+.relSvgEdge.dimmed .relEdgeStroke {
+  stroke: #cbd5e1 !important;
+  stroke-width: 1.75px !important;
+}
+
+.relCardCircle {
+  fill: #ffffff !important;
+  stroke: #94a3b8 !important;
+  stroke-width: 1.5px !important;
+}
+
+.relSvgEdge.highlighted .relCardCircle,
+.relSvgEdge.active .relCardCircle {
+  stroke: #6d28d9 !important;
+  fill: #f5f3ff !important;
+}
+
+.relCardText {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  fill: #1e293b !important;
+  user-select: none !important;
+}
+
+.relSvgEdge.active .relCardText {
+  fill: #4f46e5 !important;
+}
+
+.relAbsNode {
+  position: absolute !important;
+  z-index: 2 !important;
+  user-select: none !important;
+}
+
+.relAbsNode .relNodeCard {
+  cursor: grab !important;
+}
+
+.relAbsNode .relNodeCard:active {
+  cursor: grabbing !important;
+}
+
+.relNodeCard.selectedNode {
+  border: 2.5px solid #4f46e5 !important;
+  box-shadow: 0 10px 26px rgba(79, 70, 229, 0.25) !important;
+}
+
+.relSelectedTableBanner {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: #f5f3ff !important;
+  border: 1px solid #ddd6fe !important;
+  border-radius: 10px !important;
+  padding: 8px 10px !important;
+  font-size: 12px !important;
+}
+
+.relSelectedTableBanner span {
+  color: #5b21b6 !important;
+  font-weight: 600 !important;
+}
+
+.relSelectedTableBanner b {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  color: #0f172a !important;
+  font-weight: 800 !important;
+}
+
+.relTableRelChips {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.relMiniCaption {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+}
+
+.relRelPillList {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+
+.relRelSelectPill {
+  width: auto !important;
+  padding: 4px 9px !important;
+  border-radius: 999px !important;
+  border: 1px solid #cbd5e1 !important;
+  background: #f8fafc !important;
+  color: #334155 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+}
+
+.relRelSelectPill.active {
+  background: #4f46e5 !important;
+  border-color: #4f46e5 !important;
+  color: #ffffff !important;
+}
+
+.relNoRelBox {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+  padding: 10px 12px !important;
+  border-radius: 10px !important;
+  background: #f8fafc !important;
+  border: 1px dashed #cbd5e1 !important;
+  font-size: 12px !important;
+  color: #475569 !important;
+}
