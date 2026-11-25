@@ -5988,7 +5988,27 @@ button.primary:disabled {
   display: grid !important;
   grid-template-columns: 310px minmax(0, 1fr) !important;
   gap: 18px !important;
-  align-items: start !important;
+  align-items: stretch !important;
+}
+
+.ptStageBanner {
+  text-align: center !important;
+  margin-bottom: 14px !important;
+  padding: 4px 12px !important;
+}
+
+.ptStageBanner h1 {
+  margin: 0 0 4px !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+.ptStageBanner p {
+  margin: 0 !important;
+  font-size: 13px !important;
+  color: #475569 !important;
+  font-weight: 500 !important;
 }
 
 @media (max-width: 1024px) {
@@ -6006,6 +6026,7 @@ button.primary:disabled {
   display: flex !important;
   flex-direction: column !important;
   gap: 12px !important;
+  height: 100% !important;
 }
 
 .ptSidebarHeader {
@@ -6062,7 +6083,7 @@ button.primary:disabled {
   display: flex !important;
   flex-direction: column !important;
   gap: 8px !important;
-  max-height: 620px !important;
+  flex: 1 !important;
   overflow-y: auto !important;
 }
 

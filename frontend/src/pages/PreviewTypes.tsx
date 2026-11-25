@@ -207,6 +207,11 @@ export default function PreviewTypes({ project }: { project: MigrationProject })
 
   return (
     <div className="page">
+      <div className="ptStageBanner">
+        <h1>Data Preview & Types</h1>
+        <p>Inspect inferred column profiles, datatypes, quality warnings, and sample rows for each source table.</p>
+      </div>
+
       <div className="ptSplitLayout">
         {/* LEFT SIDEBAR: SOURCE TABLES */}
         <aside className="ptSidebar">
