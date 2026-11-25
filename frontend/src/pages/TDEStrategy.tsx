@@ -1,4 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
+import {
+  Search,
+  ChevronRight,
+  ChevronLeft,
+  CheckCircle2,
+  AlertCircle,
+  Trash2,
+  Plug,
+  Folder,
+  Crosshair,
+  Server,
+  Database,
+  Layers,
+  Table2,
+  Code2,
+  Info,
+  ListFilter,
+} from 'lucide-react';
 import { Badge, Card, Metric } from '../components/Cards';
 import DataTable from '../components/DataTable';
 import { MigrationProject, SourceMapping } from '../types/project';
@@ -70,6 +88,12 @@ export default function TDEStrategy({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
   const [section, setSection] = useState(sections[0]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [connectorFilter, setConnectorFilter] = useState('All Tables');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 8;
+
   useEffect(() => setMappings(project.source_mappings || []), [project.project_id, project.source_mappings]);
 
   const detected = (project.tde_analysis || []).length;
@@ -80,6 +104,52 @@ export default function TDEStrategy({
   const tdeMappings = mappings.filter(isTdeOrExtract);
   const originalMappings = mappings.filter(m => !isTdeOrExtract(m));
   const editableSources = useMemo(() => originalMappings, [mappings]);
+
+  const availableConnectors = useMemo(() => {
+    const set = new Set<string>();
+    editableSources.forEach(m => { if (m.target_connector) set.add(m.target_connector); });
+    return ['All Tables', ...Array.from(set)];
+  }, [editableSources]);
+
+  const filteredSources = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return editableSources.filter(m => {
+      if (connectorFilter !== 'All Tables' && m.target_connector !== connectorFilter) return false;
+      if (!q) return true;
+      const title = `${m.datasource} ${m.table_name || ''} ${m.target_file_path || ''} ${m.detected_source_path || ''}`.toLowerCase();
+      return title.includes(q);
+    });
+  }, [editableSources, searchQuery, connectorFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredSources.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pagedSources = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filteredSources.slice(start, start + PAGE_SIZE);
+  }, [filteredSources, safePage]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, connectorFilter, project.project_id]);
+
+  useEffect(() => {
+    if (!filteredSources.length) {
+      setSelectedId(null);
+      return;
+    }
+    if (!selectedId || !filteredSources.some(m => m.source_id === selectedId)) {
+      setSelectedId(filteredSources[0].source_id);
+    }
+  }, [filteredSources, selectedId]);
+
+  const selectedSource = useMemo(
+    () => filteredSources.find(m => m.source_id === selectedId) || filteredSources[0] || null,
+    [filteredSources, selectedId]
+  );
+
+  function getDisplayTitle(m: SourceMapping) {
+    return `${m.datasource}${m.table_name ? ` – ${m.table_name}` : (m.detected_source_path ? ` – ${m.detected_source_path.split(/[\\/]/).pop()}` : '')}`;
+  }
 
   function update(sourceId: string, key: keyof SourceMapping, value: string) {
     setMappings(mappings.map(m => m.source_id === sourceId ? { ...m, [key]: value } : m));
@@ -123,38 +193,234 @@ export default function TDEStrategy({
         <div className="note">Enter or correct the actual source system details that created the TDE. You can also remove unused or unnecessary tables before saving. After saving, the backend regenerates previews, datatype profiles, M queries, semantic model metadata, TDE column validation, and validation issues.</div>
         <div className="actions tdeActions"><button className="primary" onClick={save} disabled={busy}>{busy ? 'Saving & validating...' : 'Save Source Details & Validate Columns'}</button></div>
         {!editableSources.length && <div className="empty">No original source mapping recovered yet. Add source files or provide TWB/TDS/TWBX/TDSX metadata, then re-upload or use manual source placeholder details.</div>}
-        <div className="sourceCards twoColCards">{editableSources.map(m => <div className="sourceCard recoveryCard" key={m.source_id}>
-          <div className="sourceCardHeader">
-            <div className="sourceCardTitle">
-              <h3>{m.datasource}{m.table_name ? ` - ${m.table_name}` : (m.detected_source_path ? ` - ${m.detected_source_path.split(/[\\/]/).pop()}` : '')}</h3>
-              <span className="sourceCardSub">Recovered from: <b>{String(m.parameter_values?.source || m.original_connection_type || '')}</b></span>
+        {editableSources.length > 0 && (
+          <div className="tdeSplitLayout">
+            {/* LEFT MASTER TABLE LIST */}
+            <div className="tdeMasterPanel">
+              <div className="tdeMasterHeader">
+                <div className="tdeMasterTitleGroup">
+                  <span className="tdePanelIcon"><ListFilter size={17} /></span>
+                  <h3>Detected Tables ({filteredSources.length})</h3>
+                </div>
+                <div className="tdeMasterFilters">
+                  <div className="tdeSearchWrap">
+                    <Search size={14} className="tdeSearchIcon" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      placeholder="Search table name..."
+                    />
+                  </div>
+                  <select
+                    className="tdeFilterSelect"
+                    value={connectorFilter}
+                    onChange={e => setConnectorFilter(e.target.value)}
+                  >
+                    {availableConnectors.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="tdeTableWrap">
+                <table className="tdeMasterTable">
+                  <thead>
+                    <tr>
+                      <th style={{ width: 38 }}>#</th>
+                      <th>Table Name</th>
+                      <th>Source Path</th>
+                      <th>Status</th>
+                      <th style={{ width: 24 }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagedSources.map((m, idx) => {
+                      const rowNum = (safePage - 1) * PAGE_SIZE + idx + 1;
+                      const isActive = selectedSource?.source_id === m.source_id;
+                      const isConfigured = Boolean(m.target_file_path || m.server_name || m.sql_query);
+                      return (
+                        <tr
+                          key={m.source_id}
+                          className={isActive ? 'activeRow' : ''}
+                          onClick={() => setSelectedId(m.source_id)}
+                        >
+                          <td className="tdeNumCell">{rowNum}</td>
+                          <td className="tdeNameCell" title={getDisplayTitle(m)}>
+                            <b>{getDisplayTitle(m)}</b>
+                          </td>
+                          <td className="tdePathCell" title={m.target_file_path || m.detected_source_path || ''}>
+                            {m.target_file_path || m.detected_source_path || m.server_name || '—'}
+                          </td>
+                          <td>
+                            <span className={`tdeStatusBadge ${isConfigured ? 'configured' : 'pending'}`}>
+                              {isConfigured ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
+                              <span>{isConfigured ? 'Configured' : 'Needs Path'}</span>
+                            </span>
+                          </td>
+                          <td className="tdeArrowCell">
+                            {isActive && <ChevronRight size={16} />}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {!pagedSources.length && (
+                      <tr>
+                        <td colSpan={5} style={{ textAlign: 'center', padding: '24px', color: '#64748b' }}>
+                          No tables match "{searchQuery}".
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="tdePagination">
+                <span className="tdePageSummary">
+                  Showing {filteredSources.length ? (safePage - 1) * PAGE_SIZE + 1 : 0} – {Math.min(safePage * PAGE_SIZE, filteredSources.length)} of {filteredSources.length} tables
+                </span>
+                <div className="tdePageControls">
+                  <button
+                    type="button"
+                    className="tdePageBtn"
+                    disabled={safePage <= 1}
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    title="Previous page"
+                  >
+                    <ChevronLeft size={15} />
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(pNum => (
+                    <button
+                      key={pNum}
+                      type="button"
+                      className={`tdePageBtn ${pNum === safePage ? 'active' : ''}`}
+                      onClick={() => setPage(pNum)}
+                    >
+                      {pNum}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="tdePageBtn"
+                    disabled={safePage >= totalPages}
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    title="Next page"
+                  >
+                    <ChevronRight size={15} />
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="sourceCardActions">
-              <span className="miniStatus">{m.target_connector}</span>
-              <button 
-                type="button"
-                className="removeTableBtn"
-                title="Remove this unused or unnecessary table from the migration model"
-                onClick={() => removeSource(m.source_id)}
-              >
-                ✕ Remove Table
-              </button>
-            </div>
+
+            {/* RIGHT DETAIL EDITOR */}
+            {selectedSource && (
+              <div className="tdeDetailPanel">
+                <div className="tdeDetailHeader">
+                  <div className="tdeDetailTitleGroup">
+                    <span className="tdePanelIcon"><Table2 size={18} /></span>
+                    <div>
+                      <h3>{getDisplayTitle(selectedSource)}</h3>
+                      <span className="tdeDetailSub">
+                        Recovered from: <b>{String(selectedSource.parameter_values?.source || selectedSource.original_connection_type || '')}</b>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="tdeDetailActions">
+                    <span className="tdeConnectorPill">{selectedSource.target_connector}</span>
+                    <button
+                      type="button"
+                      className="tdeRemoveBtn"
+                      title="Remove this unused or unnecessary table from the migration model"
+                      onClick={() => removeSource(selectedSource.source_id)}
+                    >
+                      <Trash2 size={14} />
+                      <span>Remove Table</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="tdeEditorForm">
+                  <label className="tdeFieldLabel">
+                    <span className="tdeLabelTitle"><Plug size={14} /> Power BI Target Connector</span>
+                    <select
+                      value={selectedSource.target_connector}
+                      onChange={e => update(selectedSource.source_id, 'target_connector', e.target.value)}
+                    >
+                      {connectors.map(c => <option key={c}>{c}</option>)}
+                    </select>
+                  </label>
+
+                  <div className="tdeFormGrid2">
+                    <label className="tdeFieldLabel">
+                      <span className="tdeLabelTitle"><Folder size={14} /> Power BI Readable File Path</span>
+                      <input
+                        value={selectedSource.target_file_path || ''}
+                        onChange={e => update(selectedSource.source_id, 'target_file_path', e.target.value)}
+                        placeholder="data/orders_2026.csv or C:\Data\orders.csv"
+                      />
+                    </label>
+                    <label className="tdeFieldLabel">
+                      <span className="tdeLabelTitle"><Crosshair size={14} /> Detected Source Path</span>
+                      <input
+                        value={selectedSource.detected_source_path || ''}
+                        onChange={e => update(selectedSource.source_id, 'detected_source_path', e.target.value)}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="tdeFormGrid2">
+                    <label className="tdeFieldLabel">
+                      <span className="tdeLabelTitle"><Server size={14} /> Server / Host</span>
+                      <input
+                        value={selectedSource.server_name || ''}
+                        onChange={e => update(selectedSource.source_id, 'server_name', e.target.value)}
+                        placeholder="Enter server or host"
+                      />
+                    </label>
+                    <label className="tdeFieldLabel">
+                      <span className="tdeLabelTitle"><Database size={14} /> Database</span>
+                      <input
+                        value={selectedSource.database_name || ''}
+                        onChange={e => update(selectedSource.source_id, 'database_name', e.target.value)}
+                        placeholder="Enter database name"
+                      />
+                    </label>
+                    <label className="tdeFieldLabel">
+                      <span className="tdeLabelTitle"><Layers size={14} /> Schema</span>
+                      <input
+                        value={selectedSource.schema_name || ''}
+                        onChange={e => update(selectedSource.source_id, 'schema_name', e.target.value)}
+                        placeholder="Enter schema (optional)"
+                      />
+                    </label>
+                    <label className="tdeFieldLabel">
+                      <span className="tdeLabelTitle"><Table2 size={14} /> Table</span>
+                      <input
+                        value={selectedSource.table_name || ''}
+                        onChange={e => update(selectedSource.source_id, 'table_name', e.target.value)}
+                      />
+                    </label>
+                  </div>
+
+                  <label className="tdeFieldLabel">
+                    <span className="tdeLabelTitle"><Code2 size={14} /> Custom SQL / Native Query / Staging View Definition</span>
+                    <textarea
+                      value={selectedSource.sql_query || ''}
+                      onChange={e => update(selectedSource.source_id, 'sql_query', e.target.value)}
+                      placeholder="Paste source SQL if this TDE was built from custom SQL or a staged view"
+                    />
+                  </label>
+
+                  {selectedSource.credential_notes && (
+                    <div className="tdeInfoNote">
+                      <span className="tdeInfoIconCircle"><Info size={14} /></span>
+                      <span>{selectedSource.credential_notes}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-          <label>Power BI target connector<select value={m.target_connector} onChange={e => update(m.source_id, 'target_connector', e.target.value)}>{connectors.map(c => <option key={c}>{c}</option>)}</select></label>
-          <div className="grid2 tightGrid">
-            <label>Power BI readable file path<input value={m.target_file_path || ''} onChange={e => update(m.source_id, 'target_file_path', e.target.value)} placeholder="data/orders_2026.csv or C:\\Data\\orders.csv"/></label>
-            <label>Detected source path<input value={m.detected_source_path || ''} onChange={e => update(m.source_id, 'detected_source_path', e.target.value)} /></label>
-          </div>
-          <div className="grid2 tightGrid">
-            <label>Server / host<input value={m.server_name || ''} onChange={e => update(m.source_id, 'server_name', e.target.value)} /></label>
-            <label>Database<input value={m.database_name || ''} onChange={e => update(m.source_id, 'database_name', e.target.value)} /></label>
-            <label>Schema<input value={m.schema_name || ''} onChange={e => update(m.source_id, 'schema_name', e.target.value)} /></label>
-            <label>Table<input value={m.table_name || ''} onChange={e => update(m.source_id, 'table_name', e.target.value)} /></label>
-          </div>
-          <label>Custom SQL / native query / staging view definition<textarea value={m.sql_query || ''} onChange={e => update(m.source_id, 'sql_query', e.target.value)} placeholder="Paste source SQL if this TDE was built from custom SQL or a staged view" /></label>
-          <p className="hint">{m.credential_notes}</p>
-        </div>)}</div>
+        )}
       </div>}
     </Card>
   </div>;
