@@ -34,7 +34,7 @@ const phases = [
     id: 3,
     label: 'Phase 3',
     title: 'Convert',
-    stages: ['Calculations', 'M Query', 'Final Tables', 'Visual Plan'],
+    stages: ['Calculations', 'M Query', 'Final Tables', 'Visual Plan', 'Validation', 'Export'],
   },
 ];
 
@@ -143,33 +143,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
 
   const activePhase = phases.find((p) => p.stages.includes(active)) || null;
 
-  const TopNavLinks = () => (
-    <>
-      <button className={active === 'Landing' ? 'active' : ''} onClick={() => handleNav('Landing')}>Dashboard</button>
-      <button className={active === 'Upload' ? 'active' : ''} onClick={() => { if (onNewMigration) onNewMigration(); else handleNav('Upload'); }}>New Migration</button>
-      <button
-        className={activePhase ? 'active' : ''}
-        onClick={() => handleNav(activePhase ? activePhase.stages[0] : 'Upload Models')}
-        disabled={!hasProject}
-      >
-        {activePhase ? `${activePhase.label}: ${activePhase.title}` : 'Migration Flow'}
-      </button>
-      <button className={active === 'Validation' ? 'active' : ''} onClick={() => handleNav('Validation')} disabled={!hasProject}>Validation</button>
-      <button 
-        className={active === 'Export' ? 'active' : ''} 
-        onClick={() => { 
-          if (isDemoMode && onContactDemo) { 
-            onContactDemo(); 
-          } else { 
-            handleNav('Export'); 
-          } 
-        }} 
-        disabled={!hasProject}
-      >
-        Exports {isDemoMode && <Lock size={12} style={{ marginLeft: 4, verticalAlign: 'middle', opacity: 0.85 }} />}
-      </button>
-    </>
-  );
+  const TopNavLinks = () => null;
 
   return (
     <div className="appShell topNavShell">
@@ -224,9 +198,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
           )}
         </div>
 
-        <nav className="desktopNav">
-          <TopNavLinks />
-        </nav>
+        <div className="desktopNavSpacer" />
 
         <div className="headerActions">
           <div className="safeModePill"><ShieldCheck size={14}/> Safe Mode</div>
@@ -336,15 +308,22 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
                 const stageIdx = orderedStages.indexOf(stageName);
                 const isActive = active === stageName;
                 const isDone = stageIdx >= 0 && currentIdx > stageIdx;
+                const isLockedExport = stageName === 'Export' && isDemoMode;
                 return (
                   <button
                     key={stageName}
                     type="button"
                     className={`phaseSubstagePill ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}`}
-                    onClick={() => handleNav(stageName)}
+                    onClick={() => {
+                      if (isLockedExport && onContactDemo) {
+                        onContactDemo();
+                      } else {
+                        handleNav(stageName);
+                      }
+                    }}
                   >
                     <span className="phaseSubStepIcon">
-                      {isDone ? <CheckCircle2 size={13} /> : idx + 1}
+                      {isLockedExport ? <Lock size={12} /> : isDone ? <CheckCircle2 size={13} /> : idx + 1}
                     </span>
                     <span>{stageName}</span>
                   </button>
@@ -358,47 +337,49 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
           
           {(prevStage || nextStage) && (
             <div className="stageFooterNav">
-              {prevStage ? (
-                <button
-                  type="button"
-                  className="stageBackBtn"
-                  disabled={!canGoPrev}
-                  onClick={() => handleNav(prevStage)}
-                >
-                  <ArrowLeft size={18} /> Back to {prevStage}
-                </button>
-              ) : (
-                <div />
-              )}
-
-              {nextStage && (
-                nextStage === 'Export' && isDemoMode ? (
-                  <button 
+              <div className="stageFooterInner">
+                {prevStage ? (
+                  <button
                     type="button"
-                    className="primary lockedDemoBtn" 
-                    onClick={() => { if (onContactDemo) onContactDemo(); }}
-                    style={{ padding: '12px 24px', fontSize: '15px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                    className="stageBackBtn"
+                    disabled={!canGoPrev}
+                    onClick={() => handleNav(prevStage)}
                   >
-                    <Lock size={16} /> Proceed to Export <span className="lockedPill">Locked in Demo</span>
+                    <ArrowLeft size={18} /> Back to {prevStage}
                   </button>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                  <div />
+                )}
+
+                {nextStage && (
+                  nextStage === 'Export' && isDemoMode ? (
                     <button 
-                      className={`primary ${nextDisabled ? 'stageNextLocked' : ''}`} 
-                      disabled={!canGoNext || Boolean(nextDisabled)} 
-                      onClick={() => handleNav(nextStage)}
-                      title={nextDisabled ? nextDisabledHint : undefined}
-                      style={{ padding: '12px 24px', fontSize: '15px' }}
+                      type="button"
+                      className="primary lockedDemoBtn" 
+                      onClick={() => { if (onContactDemo) onContactDemo(); }}
+                      style={{ padding: '12px 24px', fontSize: '15px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                     >
-                      {nextDisabled && <Lock size={16} />}
-                      Proceed to {nextStage} <ArrowRight size={18}/>
+                      <Lock size={16} /> Proceed to Export <span className="lockedPill">Locked in Demo</span>
                     </button>
-                    {nextDisabled && nextDisabledHint && (
-                      <span className="stageLockHint">{nextDisabledHint}</span>
-                    )}
-                  </div>
-                )
-              )}
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+                      <button 
+                        className={`primary ${nextDisabled ? 'stageNextLocked' : ''}`} 
+                        disabled={!canGoNext || Boolean(nextDisabled)} 
+                        onClick={() => handleNav(nextStage)}
+                        title={nextDisabled ? nextDisabledHint : undefined}
+                        style={{ padding: '12px 24px', fontSize: '15px' }}
+                      >
+                        {nextDisabled && <Lock size={16} />}
+                        Proceed to {nextStage} <ArrowRight size={18}/>
+                      </button>
+                      {nextDisabled && nextDisabledHint && (
+                        <span className="stageLockHint">{nextDisabledHint}</span>
+                      )}
+                    </div>
+                  )
+                )}
+              </div>
             </div>
           )}
         </div>
