@@ -63,6 +63,23 @@ const UPLOAD_TOUR_STEPS: TourStep[] = [
   },
 ];
 
+const UPLOAD_MODELS_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'detected-upload-model',
+    selector: '[data-tour="detected-upload-model"]',
+    title: '1. Detected Upload Model',
+    description:
+      'This highlighted model among the 14 Supported Upload Models matches your uploaded assets, showing mandatory files, processing route, and production rules.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '2. Proceed to 360 Summary',
+    description:
+      'Click Proceed to 360 Summary at the bottom right to inspect the full workbook inventory, datasources, and KPIs.',
+  },
+];
+
 type Props = {
   open: boolean;
   activeStage: string;
@@ -80,7 +97,12 @@ export default function TourGuide({ open, activeStage, onClose }: Props) {
   const [stepIdx, setStepIdx] = useState(0);
   const [targetRect, setTargetRect] = useState<RectBox | null>(null);
 
-  const steps = activeStage === 'Upload' ? UPLOAD_TOUR_STEPS : LANDING_TOUR_STEPS;
+  const steps =
+    activeStage === 'Upload'
+      ? UPLOAD_TOUR_STEPS
+      : activeStage === 'Upload Models'
+      ? UPLOAD_MODELS_TOUR_STEPS
+      : LANDING_TOUR_STEPS;
   const safeStepIdx = Math.min(stepIdx, steps.length - 1);
   const step = steps[safeStepIdx];
 
@@ -112,11 +134,11 @@ export default function TourGuide({ open, activeStage, onClose }: Props) {
     }
 
     const handleTargetClick = () => {
-      if (step.id === 'new-migration' || step.id === 'upload-analyze') {
+      if (step.id === 'new-migration' || step.id === 'upload-analyze' || step.id === 'proceed-next') {
         onClose();
       }
     };
-    if (el && (step.id === 'new-migration' || step.id === 'upload-analyze')) {
+    if (el && (step.id === 'new-migration' || step.id === 'upload-analyze' || step.id === 'proceed-next')) {
       el.addEventListener('click', handleTargetClick);
     }
 
@@ -128,7 +150,7 @@ export default function TourGuide({ open, activeStage, onClose }: Props) {
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      if (el && (step.id === 'new-migration' || step.id === 'upload-analyze')) {
+      if (el && (step.id === 'new-migration' || step.id === 'upload-analyze' || step.id === 'proceed-next')) {
         el.removeEventListener('click', handleTargetClick);
       }
       window.removeEventListener('resize', measure);

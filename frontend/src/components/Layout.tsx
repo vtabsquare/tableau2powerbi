@@ -223,7 +223,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
           <TourTriggerButton
             active={tourOpen}
             onClick={() => {
-              if (active !== 'Landing' && active !== 'Upload') {
+              if (!['Landing', 'Upload', 'Upload Models'].includes(active)) {
                 handleNav('Landing');
                 setTimeout(() => setTourOpen(true), 80);
               } else {
@@ -399,6 +399,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
                       <button 
                         className={`primary ${nextDisabled ? 'stageNextLocked' : ''}`} 
+                        data-tour="proceed-next"
                         disabled={!canGoNext || Boolean(nextDisabled)} 
                         onClick={() => handleNav(nextStage)}
                         title={nextDisabled ? nextDisabledHint : undefined}

@@ -65,7 +65,10 @@ function getStepIcon(step: string) {
 
 function ModelCard({ model, detected }: { model: UploadModelDefinition; detected: boolean }) {
   return (
-    <div className={`umCard ${detected ? 'umCardDetected' : ''}`}>
+    <div
+      className={`umCard ${detected ? 'umCardDetected' : ''}`}
+      data-tour={detected ? 'detected-upload-model' : undefined}
+    >
       <div className="umCardHeader">
         <div className="umCardHeaderLeft">
           <div className={`umModelIcon ${detected ? 'detected' : ''}`}>{getModelIcon(model.id)}</div>
