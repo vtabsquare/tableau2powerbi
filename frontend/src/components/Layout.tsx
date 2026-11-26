@@ -81,6 +81,12 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
   }, [hasProject, active, currentIdx, maxReachedIdx]);
 
   useEffect(() => {
+    if (active !== 'Landing') {
+      setTourOpen(false);
+    }
+  }, [active]);
+
+  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setProfileOpen(false);

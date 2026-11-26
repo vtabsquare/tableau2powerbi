@@ -91,6 +91,15 @@ export default function TourGuide({ open, onClose }: Props) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
+    const handleTargetClick = () => {
+      if (step.id === 'new-migration') {
+        onClose();
+      }
+    };
+    if (el && step.id === 'new-migration') {
+      el.addEventListener('click', handleTargetClick);
+    }
+
     const t1 = setTimeout(measure, 120);
     const t2 = setTimeout(measure, 420);
     window.addEventListener('resize', measure);
@@ -99,10 +108,13 @@ export default function TourGuide({ open, onClose }: Props) {
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
+      if (el && step.id === 'new-migration') {
+        el.removeEventListener('click', handleTargetClick);
+      }
       window.removeEventListener('resize', measure);
       window.removeEventListener('scroll', measure, true);
     };
-  }, [open, step.selector]);
+  }, [open, step.id, step.selector, onClose]);
 
   if (!open) return null;
 

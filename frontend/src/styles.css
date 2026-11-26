@@ -10633,15 +10633,16 @@ button.primary:disabled {
   position: fixed !important;
   inset: 0 !important;
   z-index: 90 !important;
-  background: rgba(15, 23, 42, 0.45) !important;
+  background: transparent !important;
+  pointer-events: none !important;
 }
 
 .tourSpotlight {
   position: fixed !important;
   border-radius: 14px !important;
   border: 2px solid #8b5cf6 !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.28), 0 0 28px rgba(139, 92, 246, 0.6) !important;
+  background: transparent !important;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45), 0 0 0 4px rgba(139, 92, 246, 0.32), 0 0 28px rgba(139, 92, 246, 0.6) !important;
   pointer-events: none !important;
   transition: all 0.25s ease !important;
   z-index: 91 !important;
@@ -10650,6 +10651,7 @@ button.primary:disabled {
 .tourPopover {
   position: fixed !important;
   z-index: 95 !important;
+  pointer-events: auto !important;
   background: #ffffff !important;
   border: 1px solid #ddd6fe !important;
   border-radius: 16px !important;
