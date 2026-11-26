@@ -62,8 +62,21 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
   const [profileOpen, setProfileOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isScrollingTop, setIsScrollingTop] = useState(false);
+  const [maxReachedIdx, setMaxReachedIdx] = useState<number>(2);
   const profileRef = useRef<HTMLDivElement>(null);
   const mainPanelRef = useRef<HTMLElement>(null);
+
+  const currentIdx = orderedStages.indexOf(active);
+
+  useEffect(() => {
+    if (!hasProject || active === 'Landing' || active === 'Upload') {
+      setMaxReachedIdx(2);
+      return;
+    }
+    if (currentIdx > maxReachedIdx) {
+      setMaxReachedIdx(currentIdx);
+    }
+  }, [hasProject, active, currentIdx, maxReachedIdx]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -135,7 +148,6 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const currentIdx = orderedStages.indexOf(active);
   const prevStage = currentIdx > 0 ? orderedStages[currentIdx - 1] : null;
   const canGoPrev = prevStage && (hasProject || ['Landing', 'Upload', 'Upload Models'].includes(prevStage));
   const nextStage = currentIdx >= 0 && currentIdx < orderedStages.length - 1 ? orderedStages[currentIdx + 1] : null;
@@ -307,14 +319,19 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
               {activePhase.stages.map((stageName, idx) => {
                 const stageIdx = orderedStages.indexOf(stageName);
                 const isActive = active === stageName;
-                const isDone = stageIdx >= 0 && currentIdx > stageIdx;
+                const isUnlocked = stageIdx >= 0 && stageIdx <= maxReachedIdx;
+                const isDone = stageIdx >= 0 && stageIdx < maxReachedIdx && !isActive;
                 const isLockedExport = stageName === 'Export' && isDemoMode;
+                const isLocked = !isUnlocked || isLockedExport;
                 return (
                   <button
                     key={stageName}
                     type="button"
-                    className={`phaseSubstagePill ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}`}
+                    disabled={!isUnlocked}
+                    title={!isUnlocked ? 'Complete previous stages using Proceed to unlock' : undefined}
+                    className={`phaseSubstagePill ${isActive ? 'active' : ''} ${isDone ? 'done' : ''} ${!isUnlocked ? 'locked' : ''}`}
                     onClick={() => {
+                      if (!isUnlocked) return;
                       if (isLockedExport && onContactDemo) {
                         onContactDemo();
                       } else {
@@ -323,7 +340,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
                     }}
                   >
                     <span className="phaseSubStepIcon">
-                      {isLockedExport ? <Lock size={12} /> : isDone ? <CheckCircle2 size={13} /> : idx + 1}
+                      {isLocked ? <Lock size={12} /> : isDone ? <CheckCircle2 size={13} /> : idx + 1}
                     </span>
                     <span>{stageName}</span>
                   </button>
