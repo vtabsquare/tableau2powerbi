@@ -1,7 +1,7 @@
 import { ReactNode, useState, useEffect, useRef } from 'react';
 import { 
   DatabaseZap, ShieldCheck, ArrowUp, ArrowRight, ArrowLeft, LogOut, User,
-  ChevronDown, Menu, Lock
+  Menu, Lock, CheckCircle2, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 type Props = { 
@@ -17,11 +17,26 @@ type Props = {
   nextDisabledHint?: string;
 };
 
-const navGroups = {
-  discover: ['Upload Models', '360 Summary', 'File Processing Tree', 'TDE Source Recovery', 'Source Overview'],
-  prepare: ['Source Mapping', 'Preview & Types', 'Relationships'],
-  convert: ['Calculations', 'M Query', 'Final Tables', 'Visual Plan']
-};
+const phases = [
+  {
+    id: 1,
+    label: 'Phase 1',
+    title: 'Discover',
+    stages: ['Upload Models', '360 Summary', 'File Processing Tree', 'TDE Source Recovery', 'Source Overview'],
+  },
+  {
+    id: 2,
+    label: 'Phase 2',
+    title: 'Prepare',
+    stages: ['Source Mapping', 'Preview & Types', 'Relationships'],
+  },
+  {
+    id: 3,
+    label: 'Phase 3',
+    title: 'Convert',
+    stages: ['Calculations', 'M Query', 'Final Tables', 'Visual Plan'],
+  },
+];
 
 const orderedStages = [
   'Landing',
@@ -43,20 +58,15 @@ const orderedStages = [
 ];
 
 export default function Layout({ children, active, onNav, hasProject, onLogout, onNewMigration, isDemoMode, onContactDemo, nextDisabled, nextDisabledHint }: Props) {
-  const [projectsMenuOpen, setProjectsMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isScrollingTop, setIsScrollingTop] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
   const mainPanelRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setProjectsMenuOpen(false);
-      }
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setProfileOpen(false);
       }
@@ -121,7 +131,6 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
 
   const handleNav = (tab: string) => {
     onNav(tab);
-    setProjectsMenuOpen(false);
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -132,43 +141,21 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
   const nextStage = currentIdx >= 0 && currentIdx < orderedStages.length - 1 ? orderedStages[currentIdx + 1] : null;
   const canGoNext = nextStage && (hasProject || ['Upload', 'Upload Models'].includes(nextStage));
 
+  const activePhase = phases.find((p) => p.stages.includes(active)) || null;
+  const prevPhase = activePhase ? phases.find((p) => p.id === activePhase.id - 1) || null : null;
+  const nextPhase = activePhase ? phases.find((p) => p.id === activePhase.id + 1) || null : null;
+
   const TopNavLinks = () => (
     <>
       <button className={active === 'Landing' ? 'active' : ''} onClick={() => handleNav('Landing')}>Dashboard</button>
       <button className={active === 'Upload' ? 'active' : ''} onClick={() => { if (onNewMigration) onNewMigration(); else handleNav('Upload'); }}>New Migration</button>
-      
-      <div className="dropdownContainer" ref={menuRef} style={{ display: 'flex', alignItems: 'center' }}>
-        <button 
-          className={['Upload Models', '360 Summary', 'File Processing Tree', 'TDE Source Recovery', 'Source Overview', 'Source Mapping', 'Preview & Types', 'Relationships', 'Calculations', 'M Query', 'Final Tables', 'Visual Plan'].includes(active) ? 'active' : ''}
-          onClick={() => setProjectsMenuOpen(!projectsMenuOpen)}
-          disabled={!hasProject}
-        >
-          Projects <ChevronDown size={14}/>
-        </button>
-        {projectsMenuOpen && hasProject && (
-          <div className="megaMenu">
-            <div className="megaMenuColumn">
-              <h4>DISCOVER</h4>
-              {navGroups.discover.map(tab => (
-                <a key={tab} onClick={() => handleNav(tab)} className={active === tab ? 'active' : ''}>{tab}</a>
-              ))}
-            </div>
-            <div className="megaMenuColumn">
-              <h4>PREPARE</h4>
-              {navGroups.prepare.map(tab => (
-                <a key={tab} onClick={() => handleNav(tab)} className={active === tab ? 'active' : ''}>{tab}</a>
-              ))}
-            </div>
-            <div className="megaMenuColumn">
-              <h4>CONVERT</h4>
-              {navGroups.convert.map(tab => (
-                <a key={tab} onClick={() => handleNav(tab)} className={active === tab ? 'active' : ''}>{tab}</a>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
+      <button
+        className={activePhase ? 'active' : ''}
+        onClick={() => handleNav(activePhase ? activePhase.stages[0] : 'Upload Models')}
+        disabled={!hasProject}
+      >
+        {activePhase ? `${activePhase.label}: ${activePhase.title}` : 'Migration Flow'}
+      </button>
       <button className={active === 'Validation' ? 'active' : ''} onClick={() => handleNav('Validation')} disabled={!hasProject}>Validation</button>
       <button 
         className={active === 'Export' ? 'active' : ''} 
@@ -337,6 +324,63 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
 
       <main className="mainPanel" ref={mainPanelRef}>
         <div id="pageTop"/>
+        {hasProject && activePhase && (
+          <div className="phaseCenterBar">
+            <div className="phaseCenterHeader">
+              {prevPhase ? (
+                <button
+                  type="button"
+                  className="phaseStepJumpBtn"
+                  onClick={() => handleNav(prevPhase.stages[0])}
+                  title={`Go back to ${prevPhase.label}: ${prevPhase.title}`}
+                >
+                  <ChevronLeft size={14} /> {prevPhase.label}
+                </button>
+              ) : (
+                <span className="phaseStepSpacer" />
+              )}
+
+              <div className="phaseTitleBadge">
+                <span className="phaseNumPill">{activePhase.label} of 3</span>
+                <strong>{activePhase.title}</strong>
+              </div>
+
+              {nextPhase ? (
+                <button
+                  type="button"
+                  className="phaseStepJumpBtn"
+                  onClick={() => handleNav(nextPhase.stages[0])}
+                  title={`Skip to ${nextPhase.label}: ${nextPhase.title}`}
+                >
+                  {nextPhase.label} <ChevronRight size={14} />
+                </button>
+              ) : (
+                <span className="phaseStepSpacer" />
+              )}
+            </div>
+
+            <div className="phaseSubstagesRow">
+              {activePhase.stages.map((stageName, idx) => {
+                const stageIdx = orderedStages.indexOf(stageName);
+                const isActive = active === stageName;
+                const isDone = stageIdx >= 0 && currentIdx > stageIdx;
+                return (
+                  <button
+                    key={stageName}
+                    type="button"
+                    className={`phaseSubstagePill ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}`}
+                    onClick={() => handleNav(stageName)}
+                  >
+                    <span className="phaseSubStepIcon">
+                      {isDone ? <CheckCircle2 size={13} /> : idx + 1}
+                    </span>
+                    <span>{stageName}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         <div className="pageContentWrapper">
           {children}
           
