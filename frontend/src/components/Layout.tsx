@@ -3,6 +3,7 @@ import {
   DatabaseZap, ShieldCheck, ArrowUp, ArrowRight, ArrowLeft, LogOut, User,
   Menu, Lock, CheckCircle2
 } from 'lucide-react';
+import TourGuide, { TourTriggerButton } from './TourGuide';
 
 type Props = { 
   children: ReactNode; 
@@ -63,6 +64,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isScrollingTop, setIsScrollingTop] = useState(false);
   const [maxReachedIdx, setMaxReachedIdx] = useState<number>(2);
+  const [tourOpen, setTourOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const mainPanelRef = useRef<HTMLElement>(null);
 
@@ -214,6 +216,17 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
 
         <div className="headerActions">
           <div className="safeModePill"><ShieldCheck size={14}/> Safe Mode</div>
+          <TourTriggerButton
+            active={tourOpen}
+            onClick={() => {
+              if (active !== 'Landing') {
+                handleNav('Landing');
+                setTimeout(() => setTourOpen(true), 80);
+              } else {
+                setTourOpen((o) => !o);
+              }
+            }}
+          />
           {!isDemoMode && (
             <a 
               href="/demo" 
@@ -352,7 +365,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
         <div className="pageContentWrapper">
           {children}
           
-          {(prevStage || nextStage) && (
+          {active !== 'Landing' && (prevStage || nextStage) && (
             <div className="stageFooterNav">
               <div className="stageFooterInner">
                 {prevStage ? (
@@ -409,6 +422,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
           <ArrowUp size={18}/> Top
         </button>
       </main>
+      <TourGuide open={tourOpen} onClose={() => setTourOpen(false)} />
     </div>
   );
 }
