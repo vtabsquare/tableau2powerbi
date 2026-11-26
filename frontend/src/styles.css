@@ -10024,3 +10024,269 @@ button.primary:disabled {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* ==========================================================================
+   VALIDATION & AUTO-FIX CENTER REDESIGN
+   ========================================================================== */
+.valPage {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+}
+
+.valAccordionCard {
+  background: #ffffff !important;
+  border: 1px solid #e6e8f2 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04) !important;
+  overflow: hidden !important;
+}
+
+.valAccordionHeader {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  padding: 14px 18px !important;
+  background: #ffffff !important;
+  border: none !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  flex-wrap: wrap !important;
+  transition: background 0.15s ease !important;
+}
+
+.valAccordionHeader:hover {
+  background: #faf9ff !important;
+}
+
+.valAccLeft {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+  flex-wrap: wrap !important;
+}
+
+.valChevron {
+  color: #475569 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.valAccIcon {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 999px !important;
+  background: #f3e8ff !important;
+  color: #7c3aed !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.valAccTitle {
+  margin: 0 !important;
+  font-size: 15.5px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+}
+
+.valAccSub {
+  font-weight: 500 !important;
+  color: #475569 !important;
+  font-size: 14px !important;
+}
+
+.valChecksPill {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 3px 10px !important;
+  border-radius: 999px !important;
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.valAccRight {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex-shrink: 0 !important;
+}
+
+.valPassedPill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 12px !important;
+  border-radius: 999px !important;
+  background: #f0fdf4 !important;
+  border: 1px solid #bbf7d0 !important;
+  color: #15803d !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+}
+
+.valWarnPill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 5px 12px !important;
+  border-radius: 999px !important;
+  background: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  color: #b45309 !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+}
+
+.valAccordionBody {
+  padding: 4px 18px 18px !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+.valFilterBar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 12px 0 !important;
+  flex-wrap: wrap !important;
+}
+
+.valSearchBox {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 8px 12px !important;
+  border-radius: 10px !important;
+  border: 1px solid #dce1ee !important;
+  background: #ffffff !important;
+  color: #64748b !important;
+  min-width: 280px !important;
+  flex: 1 !important;
+  max-width: 360px !important;
+}
+
+.valSearchBox input {
+  border: none !important;
+  outline: none !important;
+  background: transparent !important;
+  width: 100% !important;
+  font-size: 13px !important;
+  color: #0f172a !important;
+}
+
+.valFilterSelects {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  flex-wrap: wrap !important;
+}
+
+.valSelectGroup {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 13px !important;
+  color: #475569 !important;
+  font-weight: 600 !important;
+}
+
+.valSelectGroup select {
+  padding: 7px 12px !important;
+  border-radius: 9px !important;
+  border: 1px solid #dce1ee !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  min-width: 110px !important;
+  cursor: pointer !important;
+}
+
+.valTableWrap {
+  overflow-x: auto !important;
+  border-radius: 10px !important;
+}
+
+.valTable {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 13px !important;
+}
+
+.valTable th {
+  text-align: left !important;
+  padding: 10px 12px !important;
+  color: #0f172a !important;
+  font-weight: 700 !important;
+  font-size: 12.5px !important;
+  border-bottom: 1px solid #e6e8f2 !important;
+  background: #fafbfe !important;
+  white-space: nowrap !important;
+}
+
+.valTable td {
+  padding: 11px 12px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #334155 !important;
+  vertical-align: middle !important;
+}
+
+.valTable tbody tr:hover {
+  background: #faf8ff !important;
+}
+
+.valSevPill {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 66px !important;
+  padding: 3px 11px !important;
+  border-radius: 999px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.valSevHigh {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+}
+
+.valSevMedium {
+  background: #fef3c7 !important;
+  color: #d97706 !important;
+}
+
+.valSevLow {
+  background: #dbeafe !important;
+  color: #2563eb !important;
+}
+
+.valCatCell {
+  white-space: nowrap !important;
+  color: #475569 !important;
+}
+
+.valObjCell {
+  font-weight: 600 !important;
+  color: #0f172a !important;
+}
+
+.valMsgCell,
+.valFixCell {
+  color: #334155 !important;
+}
+
+.valEmptyCell {
+  padding: 24px !important;
+  text-align: center !important;
+  color: #64748b !important;
+}
