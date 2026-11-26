@@ -28,7 +28,32 @@ type NodePos = { x: number; y: number };
 const CARD_W = 216;
 const CARD_H = 196;
 const GAP_X = 96;
-const GAP_Y = 74;
+const GAP_Y = 80;
+
+function estimateCardHeight(t: SemanticTable): number {
+  const totalFields = (t.columns?.length || 0) + (t.measures?.length || 0);
+  const visibleRows = Math.min(7, totalFields);
+  const hasOverflow = totalFields > 7 ? 20 : 0;
+  return 44 + visibleRows * 22 + hasOverflow + 14;
+}
+
+function cubicBezierPoint(
+  p0: { x: number; y: number },
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  p3: { x: number; y: number },
+  t: number
+): { x: number; y: number } {
+  const u = 1 - t;
+  const tt = t * t;
+  const uu = u * u;
+  const uuu = uu * u;
+  const ttt = tt * t;
+  return {
+    x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
+    y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y,
+  };
+}
 
 function computeInitialPositions(tables: SemanticTable[], rels: Relationship[]): Record<string, NodePos> {
   const positions: Record<string, NodePos> = {};
@@ -95,26 +120,45 @@ function computeInitialPositions(tables: SemanticTable[], rels: Relationship[]):
       const midIdx = Math.floor(Math.min(colsCount, sorted.length + 1) / 2);
       sorted.splice(midIdx, 0, hub);
     }
+    const rowHeights: number[] = [];
+    sorted.forEach((t, idx) => {
+      const row = Math.floor(idx / colsCount);
+      const h = estimateCardHeight(t);
+      rowHeights[row] = Math.max(rowHeights[row] || 0, h);
+    });
+    const rowOffsets: number[] = [cursorY];
+    for (let r = 0; r < rowHeights.length - 1; r++) {
+      rowOffsets[r + 1] = rowOffsets[r] + rowHeights[r] + GAP_Y;
+    }
     sorted.forEach((t, idx) => {
       const col = idx % colsCount;
       const row = Math.floor(idx / colsCount);
       positions[t.name] = {
         x: 28 + col * (CARD_W + GAP_X),
-        y: cursorY + row * (CARD_H + GAP_Y),
+        y: rowOffsets[row],
       };
     });
-    const rowsUsed = Math.ceil(sorted.length / colsCount);
-    cursorY += rowsUsed * (CARD_H + GAP_Y);
+    const totalCompH = rowHeights.reduce((acc, h) => acc + h + GAP_Y, 0);
+    cursorY += totalCompH;
   });
 
   // Layout standalone tables neatly below
   if (standalone.length) {
+    const sRowHeights: number[] = [];
+    standalone.forEach((t, idx) => {
+      const row = Math.floor(idx / maxCols);
+      sRowHeights[row] = Math.max(sRowHeights[row] || 0, estimateCardHeight(t));
+    });
+    const sRowOffsets: number[] = [cursorY];
+    for (let r = 0; r < sRowHeights.length - 1; r++) {
+      sRowOffsets[r + 1] = sRowOffsets[r] + sRowHeights[r] + GAP_Y;
+    }
     standalone.forEach((t, idx) => {
       const col = idx % maxCols;
       const row = Math.floor(idx / maxCols);
       positions[t.name] = {
         x: 28 + col * (CARD_W + GAP_X),
-        y: cursorY + row * (CARD_H + GAP_Y),
+        y: sRowOffsets[row],
       };
     });
   }
@@ -183,13 +227,36 @@ export default function Relationships({ project, setProject }: { project: Migrat
     }
   }, [rels, selectedRelId, selectedTableName]);
 
+  const nodeRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [nodeSizes, setNodeSizes] = useState<Record<string, { w: number; h: number }>>({});
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      const measured: Record<string, { w: number; h: number }> = {};
+      let changed = false;
+      finalTables.forEach(t => {
+        const el = nodeRefs.current[t.name];
+        if (el) {
+          const w = el.offsetWidth || CARD_W;
+          const h = el.offsetHeight || estimateCardHeight(t);
+          measured[t.name] = { w, h };
+          if (nodeSizes[t.name]?.w !== w || nodeSizes[t.name]?.h !== h) {
+            changed = true;
+          }
+        }
+      });
+      if (changed) setNodeSizes(measured);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [finalTables, activeTab, nodePositions, nodeSizes]);
+
   const canvasBounds = useMemo(() => {
-    const vals = Object.values(nodePositions);
+    const vals = Object.entries(nodePositions);
     if (!vals.length) return { width: 900, height: 520 };
-    const maxX = Math.max(...vals.map(p => p.x)) + CARD_W + 40;
-    const maxY = Math.max(...vals.map(p => p.y)) + CARD_H + 40;
+    const maxX = Math.max(...vals.map(([name, p]) => p.x + (nodeSizes[name]?.w || CARD_W))) + 40;
+    const maxY = Math.max(...vals.map(([name, p]) => p.y + (nodeSizes[name]?.h || CARD_H))) + 40;
     return { width: Math.max(760, maxX), height: Math.max(460, maxY) };
-  }, [nodePositions]);
+  }, [nodePositions, nodeSizes]);
 
   function fitToView() {
     const el = canvasViewportRef.current;
@@ -515,10 +582,17 @@ export default function Relationships({ project, setProject }: { project: Migrat
                           const p2 = nodePositions[r.to_table];
                           if (!p1 || !p2) return null;
 
-                          const c1x = p1.x + CARD_W / 2;
-                          const c1y = p1.y + CARD_H / 2;
-                          const c2x = p2.x + CARD_W / 2;
-                          const c2y = p2.y + CARD_H / 2;
+                          const t1 = finalTables.find(t => t.name === r.from_table);
+                          const t2 = finalTables.find(t => t.name === r.to_table);
+                          const w1 = nodeSizes[r.from_table]?.w || CARD_W;
+                          const h1 = nodeSizes[r.from_table]?.h || (t1 ? estimateCardHeight(t1) : CARD_H);
+                          const w2 = nodeSizes[r.to_table]?.w || CARD_W;
+                          const h2 = nodeSizes[r.to_table]?.h || (t2 ? estimateCardHeight(t2) : CARD_H);
+
+                          const c1x = p1.x + w1 / 2;
+                          const c1y = p1.y + h1 / 2;
+                          const c2x = p2.x + w2 / 2;
+                          const c2y = p2.y + h2 / 2;
                           const dx = c2x - c1x;
                           const dy = c2y - c1y;
 
@@ -527,19 +601,20 @@ export default function Relationships({ project, setProject }: { project: Migrat
                           let x2 = c2x;
                           let y2 = c2y;
 
-                          if (Math.abs(dx) >= Math.abs(dy)) {
-                            x1 = dx >= 0 ? p1.x + CARD_W : p1.x;
-                            x2 = dx >= 0 ? p2.x : p2.x + CARD_W;
+                          const horiz = Math.abs(dx) >= Math.abs(dy);
+                          if (horiz) {
+                            x1 = dx >= 0 ? p1.x + w1 : p1.x;
+                            x2 = dx >= 0 ? p2.x : p2.x + w2;
                           } else {
-                            y1 = dy >= 0 ? p1.y + CARD_H : p1.y;
-                            y2 = dy >= 0 ? p2.y : p2.y + CARD_H;
+                            y1 = dy >= 0 ? p1.y + h1 : p1.y;
+                            y2 = dy >= 0 ? p2.y : p2.y + h2;
                           }
 
                           const midX = (x1 + x2) / 2;
                           const midY = (y1 + y2) / 2;
-                          const pathD = Math.abs(dx) >= Math.abs(dy)
-                            ? `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`
-                            : `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+                          const cp1 = horiz ? { x: midX, y: y1 } : { x: x1, y: midY };
+                          const cp2 = horiz ? { x: midX, y: y2 } : { x: x2, y: midY };
+                          const pathD = `M ${x1} ${y1} C ${cp1.x} ${cp1.y}, ${cp2.x} ${cp2.y}, ${x2} ${y2}`;
 
                           const isHighlighted =
                             selectedRel?.id === r.id ||
@@ -550,10 +625,14 @@ export default function Relationships({ project, setProject }: { project: Migrat
                           const fromLabel = r.cardinality === 'One-to-one' ? '1' : '*';
                           const toLabel = '1';
 
-                          const lbl1X = x1 + (x2 - x1) * 0.14;
-                          const lbl1Y = y1 + (y2 - y1) * 0.14;
-                          const lbl2X = x2 - (x2 - x1) * 0.14;
-                          const lbl2Y = y2 - (y2 - y1) * 0.14;
+                          const pt0 = { x: x1, y: y1 };
+                          const pt3 = { x: x2, y: y2 };
+                          const lbl1 = cubicBezierPoint(pt0, cp1, cp2, pt3, 0.14);
+                          const lbl2 = cubicBezierPoint(pt0, cp1, cp2, pt3, 0.86);
+                          const lbl1X = lbl1.x;
+                          const lbl1Y = lbl1.y;
+                          const lbl2X = lbl2.x;
+                          const lbl2Y = lbl2.y;
 
                           return (
                             <g
@@ -581,6 +660,7 @@ export default function Relationships({ project, setProject }: { project: Migrat
                         return (
                           <div
                             key={t.name}
+                            ref={el => { nodeRefs.current[t.name] = el; }}
                             className="relAbsNode"
                             style={{ left: pos.x, top: pos.y, width: CARD_W }}
                           >
