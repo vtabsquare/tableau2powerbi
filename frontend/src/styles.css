@@ -10632,7 +10632,7 @@ button.primary:disabled {
 .tourOverlay {
   position: fixed !important;
   inset: 0 !important;
-  z-index: 90 !important;
+  z-index: 1200 !important;
   background: transparent !important;
   pointer-events: none !important;
 }
@@ -10645,12 +10645,12 @@ button.primary:disabled {
   box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45), 0 0 0 4px rgba(139, 92, 246, 0.32), 0 0 28px rgba(139, 92, 246, 0.6) !important;
   pointer-events: none !important;
   transition: all 0.25s ease !important;
-  z-index: 91 !important;
+  z-index: 1201 !important;
 }
 
 .tourPopover {
   position: fixed !important;
-  z-index: 95 !important;
+  z-index: 1205 !important;
   pointer-events: auto !important;
   background: #ffffff !important;
   border: 1px solid #ddd6fe !important;

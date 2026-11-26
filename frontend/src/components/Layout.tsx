@@ -230,6 +230,8 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
                 '360 Summary',
                 'File Processing Tree',
                 'TDE Source Recovery',
+                'Source Overview',
+                'Source Mapping',
               ];
               if (!tourStages.includes(active)) {
                 handleNav('Landing');

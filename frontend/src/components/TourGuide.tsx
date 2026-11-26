@@ -145,6 +145,61 @@ const TDE_RECOVERY_TOUR_STEPS: TourStep[] = [
   },
 ];
 
+const SOURCE_OVERVIEW_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'so-all-tables',
+    selector: '[data-tour="so-all-tables"]',
+    title: '1. All Source Tables',
+    description:
+      'Review all detected source tables, original connection types, target connectors, detected/target paths, and import modes.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '2. Proceed to Source Mapping',
+    description:
+      'Click Proceed to Source Mapping to configure file paths, connectors, and Power Query path parameters.',
+  },
+];
+
+const SOURCE_MAPPING_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'sm-tables-grid',
+    selector: '[data-tour="sm-tables-grid"]',
+    title: '1. Review Connection Details for Tables',
+    description:
+      'Review each table card or row to verify target connectors, file paths, and schemas.',
+  },
+  {
+    id: 'sm-eye-btn',
+    selector: '[data-tour="sm-eye-btn"]',
+    title: '2. Click the Eye Inspect Icon',
+    description:
+      'Click the eye icon on any table to open its full connection, SQL, and Power Query path parameter details.',
+  },
+  {
+    id: 'sm-detail-modal',
+    selector: '[data-tour="sm-detail-modal"], [data-tour="sm-eye-btn"]',
+    title: '3. Review Inspected Details & Click Done',
+    description:
+      'Verify that the inspected table connection details and File Path (without quotes) are proper, then click Done.',
+  },
+  {
+    id: 'sm-apply-btn',
+    selector: '[data-tour="sm-apply-btn"]',
+    title: '4. Apply & Regenerate M',
+    description:
+      'Click Apply & Regenerate M to save your mappings, regenerate Power Query scripts, and unlock the next stage.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '5. Proceed to Preview & Types',
+    description:
+      'Once applied, click Proceed to Preview & Types to inspect column profiles and sample data.',
+  },
+];
+
 type Props = {
   open: boolean;
   activeStage: string;
@@ -173,6 +228,10 @@ export default function TourGuide({ open, activeStage, onClose }: Props) {
       ? FILE_TREE_TOUR_STEPS
       : activeStage === 'TDE Source Recovery'
       ? TDE_RECOVERY_TOUR_STEPS
+      : activeStage === 'Source Overview'
+      ? SOURCE_OVERVIEW_TOUR_STEPS
+      : activeStage === 'Source Mapping'
+      ? SOURCE_MAPPING_TOUR_STEPS
       : LANDING_TOUR_STEPS;
   const safeStepIdx = Math.min(stepIdx, steps.length - 1);
   const step = steps[safeStepIdx];

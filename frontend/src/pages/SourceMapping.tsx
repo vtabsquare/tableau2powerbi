@@ -203,6 +203,7 @@ export default function SourceMapping({
           <button
             type="button"
             className="smApplyBtn"
+            data-tour="sm-apply-btn"
             onClick={save}
             disabled={busy || hasAnyQuotedPath}
             title={hasAnyQuotedPath ? 'Remove quotes from File Path before applying' : undefined}
@@ -305,7 +306,7 @@ export default function SourceMapping({
 
         {/* CARD VIEW (4-COLUMN COMPACT GRID) */}
         {filtered.length > 0 && viewMode === 'card' && (
-          <div className="smCardGrid">
+          <div className="smCardGrid" data-tour="sm-tables-grid">
             {filtered.map((m) => {
               const tag = getConnectorTag(m.target_connector);
               const isSelected = selectedIds.includes(m.source_id);
@@ -416,6 +417,7 @@ export default function SourceMapping({
                     <button
                       type="button"
                       className="smEyeBtn"
+                      data-tour="sm-eye-btn"
                       onClick={() => setDetailSourceId(m.source_id)}
                       title="Inspect full connection, SQL & details"
                     >
@@ -430,7 +432,7 @@ export default function SourceMapping({
 
         {/* TABLE VIEW */}
         {filtered.length > 0 && viewMode === 'table' && (
-          <div className="soTableWrap">
+          <div className="soTableWrap" data-tour="sm-tables-grid">
             <table className="soInventoryTable">
               <thead>
                 <tr>
@@ -492,7 +494,7 @@ export default function SourceMapping({
                     </td>
                     <td>
                       <div style={{ display: 'flex', gap: 6 }}>
-                        <button type="button" className="smEyeBtn" onClick={() => setDetailSourceId(m.source_id)} title="Details & SQL">
+                        <button type="button" className="smEyeBtn" data-tour="sm-eye-btn" onClick={() => setDetailSourceId(m.source_id)} title="Details & SQL">
                           <Eye size={14} />
                         </button>
                         <button type="button" className="smEyeBtn danger" onClick={() => removeSource(m.source_id)} title="Remove table">
@@ -511,7 +513,7 @@ export default function SourceMapping({
       {/* FULL DETAILS / SQL / ADVANCED EDIT MODAL */}
       {detailSource && (
         <div className="migrationModalBackdrop" onClick={() => setDetailSourceId(null)}>
-          <div className="smDetailModal" onClick={e => e.stopPropagation()}>
+          <div className="smDetailModal" data-tour="sm-detail-modal" onClick={e => e.stopPropagation()}>
             <div className="smModalHeader">
               <div className="smCardHeadLeft">
                 <span className="smCardIcon"><Plug size={18} /></span>

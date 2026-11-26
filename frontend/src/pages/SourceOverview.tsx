@@ -108,7 +108,7 @@ export default function SourceOverview({ project }: {project: MigrationProject})
       <Card title="Extract/TDE production decision"><DataTable rows={extractRows(project)} empty="No extract or TDE source detected"/></Card>
     </div>
 
-    <div className="soInventoryShell">
+    <div className="soInventoryShell" data-tour="so-all-tables">
       <div className="soInventoryHeader">
         <div className="soTitleGroup">
           <span className="soTitleIcon"><Table2 size={18} /></span>
