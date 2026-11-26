@@ -10473,6 +10473,8 @@ button.primary:disabled {
   align-items: center !important;
   justify-content: center !important;
   gap: 4px !important;
+  width: auto !important;
+  white-space: nowrap !important;
   padding: 4px 10px !important;
   border-radius: 8px !important;
   border: 1px solid #e2e8f0 !important;
@@ -10496,17 +10498,23 @@ button.primary:disabled {
 
 .phaseSubstagesRow {
   display: flex !important;
+  flex-direction: row !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
   flex-wrap: wrap !important;
+  width: 100% !important;
 }
 
 .phaseSubstagePill {
   display: inline-flex !important;
+  flex-direction: row !important;
   align-items: center !important;
   gap: 7px !important;
-  padding: 6px 13px !important;
+  width: auto !important;
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+  padding: 6px 14px !important;
   border-radius: 999px !important;
   border: 1px solid #e2e8f0 !important;
   background: #ffffff !important;
