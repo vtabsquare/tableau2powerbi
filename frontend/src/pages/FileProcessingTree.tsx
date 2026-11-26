@@ -24,7 +24,7 @@ function Node({node, depth=0}: {node:any; depth?:number}) {
   </div>
 }
 export default function FileProcessingTree({project}:{project:MigrationProject}) {
- return <div className="page"><Card title="File Processing & Next-Stage Routing" right={<Badge tone="neutral">{project.inventory.length} inventoried files</Badge>}>
+ return <div className="page" data-tour="file-processing-routing"><Card title="File Processing & Next-Stage Routing" right={<Badge tone="neutral">{project.inventory.length} inventoried files</Badge>}>
    <div className="note">Every uploaded file is assigned a processing mode, a migration purpose, and the application screen where its processed output should be used next. Packages are expanded first; child files are then routed independently.</div>
    <div className="treePanel">{(project.file_processing_tree || []).map((n:any) => <Node key={n.id} node={n}/>)}</div>
  </Card></div>;

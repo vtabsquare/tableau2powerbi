@@ -331,7 +331,7 @@ export default function Summary({ project, onDeleted }: { project: MigrationProj
       </div>
 
       {/* 2. COMPACT MIGRATION HEALTH BY AREA */}
-      <div className="s360Shell">
+      <div className="s360Shell" data-tour="compact-health">
         <div className="s360SectionHeader">
           <div className="s360TitleGroup">
             <div className="s360TitleIcon">

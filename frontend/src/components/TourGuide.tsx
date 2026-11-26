@@ -80,6 +80,71 @@ const UPLOAD_MODELS_TOUR_STEPS: TourStep[] = [
   },
 ];
 
+const SUMMARY_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'compact-health',
+    selector: '[data-tour="compact-health"]',
+    title: '1. Compact Migration Health by Area',
+    description:
+      'Review migration health across Report Structure, Data Model, Logic, and TDE Strategy in one compact table.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '2. Proceed to File Processing Tree',
+    description:
+      'Click Proceed to File Processing Tree to see how every uploaded file is routed through the migration pipeline.',
+  },
+];
+
+const FILE_TREE_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'file-processing-routing',
+    selector: '[data-tour="file-processing-routing"]',
+    title: '1. File Processing & Next-Stage Routing',
+    description:
+      'Inspect how each uploaded package and child file is classified, its processing route, and which stage uses its output next.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '2. Proceed to TDE Source Recovery',
+    description:
+      'Click Proceed to TDE Source Recovery to verify or recover the original upstream data sources.',
+  },
+];
+
+const TDE_RECOVERY_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'tde-detected-tables',
+    selector: '[data-tour="tde-detected-tables"]',
+    title: '1. Review All Detected Tables',
+    description:
+      'Review every detected table in the left list and select any table to inspect or update its source connection details.',
+  },
+  {
+    id: 'tde-path-input',
+    selector: '[data-tour="tde-path-input"]',
+    title: '2. Enter Path Details Properly',
+    description:
+      'Enter the Power BI Readable File Path cleanly without quotes (e.g. Data/Academic_Data.xlsx). Quoted paths are blocked in red.',
+  },
+  {
+    id: 'tde-save-btn',
+    selector: '[data-tour="tde-save-btn"]',
+    title: '3. Save Source Details & Validate Columns',
+    description:
+      'Click Save Source Details & Validate Columns to persist your source paths and unlock the next stage.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '4. Proceed to Source Overview',
+    description:
+      'Once saved, click Proceed to Source Overview to review the complete source inventory.',
+  },
+];
+
 type Props = {
   open: boolean;
   activeStage: string;
@@ -102,6 +167,12 @@ export default function TourGuide({ open, activeStage, onClose }: Props) {
       ? UPLOAD_TOUR_STEPS
       : activeStage === 'Upload Models'
       ? UPLOAD_MODELS_TOUR_STEPS
+      : activeStage === '360 Summary'
+      ? SUMMARY_TOUR_STEPS
+      : activeStage === 'File Processing Tree'
+      ? FILE_TREE_TOUR_STEPS
+      : activeStage === 'TDE Source Recovery'
+      ? TDE_RECOVERY_TOUR_STEPS
       : LANDING_TOUR_STEPS;
   const safeStepIdx = Math.min(stepIdx, steps.length - 1);
   const step = steps[safeStepIdx];

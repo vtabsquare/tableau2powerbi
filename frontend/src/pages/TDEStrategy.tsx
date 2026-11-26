@@ -202,7 +202,7 @@ export default function TDEStrategy({
       {section === 'Set original source details' && <div>
         <div className="note">Enter or correct the actual source system details that created the TDE. You can also remove unused or unnecessary tables before saving. After saving, the backend regenerates previews, datatype profiles, M queries, semantic model metadata, TDE column validation, and validation issues.</div>
         <div className="actions tdeActions">
-          <button className="primary" onClick={save} disabled={busy || hasAnyQuotedPath}>
+          <button className="primary" data-tour="tde-save-btn" onClick={save} disabled={busy || hasAnyQuotedPath}>
             {busy ? 'Saving & validating...' : 'Save Source Details & Validate Columns'}
           </button>
           {hasAnyQuotedPath && (
@@ -213,7 +213,7 @@ export default function TDEStrategy({
         {editableSources.length > 0 && (
           <div className="tdeSplitLayout">
             {/* LEFT MASTER TABLE LIST */}
-            <div className="tdeMasterPanel">
+            <div className="tdeMasterPanel" data-tour="tde-detected-tables">
               <div className="tdeMasterHeader">
                 <div className="tdeMasterTitleGroup">
                   <span className="tdePanelIcon"><ListFilter size={17} /></span>
@@ -367,7 +367,7 @@ export default function TDEStrategy({
                   </label>
 
                   <div className="tdeFormGrid2">
-                    <label className="tdeFieldLabel">
+                    <label className="tdeFieldLabel" data-tour="tde-path-input">
                       <span className="tdeLabelTitle"><Folder size={14} /> Power BI Readable File Path</span>
                       <input
                         className={hasQuotesInPath(selectedSource.target_file_path) ? 'pathInputBlocked' : ''}

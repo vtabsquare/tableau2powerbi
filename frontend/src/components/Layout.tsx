@@ -223,7 +223,15 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
           <TourTriggerButton
             active={tourOpen}
             onClick={() => {
-              if (!['Landing', 'Upload', 'Upload Models'].includes(active)) {
+              const tourStages = [
+                'Landing',
+                'Upload',
+                'Upload Models',
+                '360 Summary',
+                'File Processing Tree',
+                'TDE Source Recovery',
+              ];
+              if (!tourStages.includes(active)) {
                 handleNav('Landing');
                 setTimeout(() => setTourOpen(true), 80);
               } else {
