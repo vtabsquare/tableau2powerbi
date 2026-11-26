@@ -10,20 +10,20 @@ export default function Landing({ onStart }: {onStart: () => void}) {
         <p>Upload Tableau workbooks, packaged workbooks, data sources, Prep flows, extracts and project ZIPs. The workbench inventories the package, recovers Tableau metadata, identifies original data-source logic, converts safe calculations to Power Query M / DAX, and exports a Power BI migration package with review and validation artifacts.</p>
         <div className="actions"><button className="primary" data-tour="new-migration" onClick={onStart}>New Migration <ArrowRight size={16}/></button><span className="pill">Safe Openable Mode default</span><span className="pill">TDE ignored as production source</span></div>
       </div>
-      <div className="phaseRow" data-tour="phase-row">
-        <div className="phaseCard">
+      <div className="phaseRow">
+        <div className="phaseCard" data-tour="phase-discover">
           <b>DISCOVER</b>
           <span>Inventory and source recovery</span>
         </div>
-        <div className="phaseCard">
+        <div className="phaseCard" data-tour="phase-prepare">
           <b>PREPARE</b>
           <span>Mapping and relationships</span>
         </div>
-        <div className="phaseCard">
+        <div className="phaseCard" data-tour="phase-convert">
           <b>CONVERT</b>
           <span>Power Query, DAX and visuals</span>
         </div>
-        <div className="phaseCard">
+        <div className="phaseCard" data-tour="phase-deliver">
           <b>DELIVER</b>
           <span>Validation and export</span>
         </div>
