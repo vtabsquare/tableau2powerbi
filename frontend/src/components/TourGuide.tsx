@@ -8,7 +8,7 @@ export type TourStep = {
   description: string;
 };
 
-const TOUR_STEPS: TourStep[] = [
+const LANDING_TOUR_STEPS: TourStep[] = [
   {
     id: 'phase-discover',
     selector: '[data-tour="phase-discover"]',
@@ -46,8 +46,26 @@ const TOUR_STEPS: TourStep[] = [
   },
 ];
 
+const UPLOAD_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'choose-files',
+    selector: '[data-tour="choose-files"]',
+    title: '1. Choose Files',
+    description:
+      'Click Choose Files (or drag & drop) to select your Tableau workbook (.twb/.twbx), data sources, Prep flows, or a complete project ZIP.',
+  },
+  {
+    id: 'upload-analyze',
+    selector: '[data-tour="upload-analyze"], [data-tour="upload-analyze-fallback"]',
+    title: '2. Upload & Analyze',
+    description:
+      'Click Upload & Analyze File(s) to inventory your package, detect the upload model, and begin automated metadata extraction.',
+  },
+];
+
 type Props = {
   open: boolean;
+  activeStage: string;
   onClose: () => void;
 };
 
@@ -58,11 +76,13 @@ type RectBox = {
   height: number;
 };
 
-export default function TourGuide({ open, onClose }: Props) {
+export default function TourGuide({ open, activeStage, onClose }: Props) {
   const [stepIdx, setStepIdx] = useState(0);
   const [targetRect, setTargetRect] = useState<RectBox | null>(null);
 
-  const step = TOUR_STEPS[stepIdx];
+  const steps = activeStage === 'Upload' ? UPLOAD_TOUR_STEPS : LANDING_TOUR_STEPS;
+  const safeStepIdx = Math.min(stepIdx, steps.length - 1);
+  const step = steps[safeStepIdx];
 
   useEffect(() => {
     if (!open) {
@@ -92,11 +112,11 @@ export default function TourGuide({ open, onClose }: Props) {
     }
 
     const handleTargetClick = () => {
-      if (step.id === 'new-migration') {
+      if (step.id === 'new-migration' || step.id === 'upload-analyze') {
         onClose();
       }
     };
-    if (el && step.id === 'new-migration') {
+    if (el && (step.id === 'new-migration' || step.id === 'upload-analyze')) {
       el.addEventListener('click', handleTargetClick);
     }
 
@@ -108,7 +128,7 @@ export default function TourGuide({ open, onClose }: Props) {
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      if (el && step.id === 'new-migration') {
+      if (el && (step.id === 'new-migration' || step.id === 'upload-analyze')) {
         el.removeEventListener('click', handleTargetClick);
       }
       window.removeEventListener('resize', measure);
@@ -118,7 +138,7 @@ export default function TourGuide({ open, onClose }: Props) {
 
   if (!open) return null;
 
-  const isLast = stepIdx === TOUR_STEPS.length - 1;
+  const isLast = safeStepIdx === steps.length - 1;
 
   const viewportW = typeof window !== 'undefined' ? window.innerWidth : 1280;
   const viewportH = typeof window !== 'undefined' ? window.innerHeight : 800;
@@ -163,7 +183,7 @@ export default function TourGuide({ open, onClose }: Props) {
       >
         <div className="tourPopoverTop">
           <span className="tourStepBadge">
-            Step {stepIdx + 1} of {TOUR_STEPS.length}
+            Step {safeStepIdx + 1} of {steps.length}
           </span>
           <button type="button" className="tourCloseBtn" onClick={onClose} aria-label="Close tour">
             <X size={15} />
@@ -175,8 +195,8 @@ export default function TourGuide({ open, onClose }: Props) {
 
         <div className="tourPopoverFooter">
           <div className="tourDots">
-            {TOUR_STEPS.map((s, i) => (
-              <span key={s.id} className={i === stepIdx ? 'active' : ''} />
+            {steps.map((s, i) => (
+              <span key={s.id} className={i === safeStepIdx ? 'active' : ''} />
             ))}
           </div>
           <div className="tourPopoverBtns">

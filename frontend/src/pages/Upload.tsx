@@ -118,6 +118,7 @@ export default function Upload({ project, setProject, onLoaded }: {project?: Mig
         <button 
           type="button" 
           className="btnChooseFiles" 
+          data-tour="choose-files"
           onClick={() => fileInputRef.current?.click()}
         >
           <UploadIcon size={17} />
@@ -143,6 +144,7 @@ export default function Upload({ project, setProject, onLoaded }: {project?: Mig
             <button 
               type="button" 
               className="startUploadBtn" 
+              data-tour="upload-analyze"
               onClick={(e) => { e.stopPropagation(); submit(); }}
               disabled={busy}
             >
@@ -161,6 +163,7 @@ export default function Upload({ project, setProject, onLoaded }: {project?: Mig
         <button 
           type="button"
           className={`uploadActionCard primaryCard ${files.length > 0 ? 'hasFiles' : ''}`}
+          data-tour="upload-analyze-fallback"
           disabled={busy}
           onClick={submit}
         >

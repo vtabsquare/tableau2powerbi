@@ -81,9 +81,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
   }, [hasProject, active, currentIdx, maxReachedIdx]);
 
   useEffect(() => {
-    if (active !== 'Landing') {
-      setTourOpen(false);
-    }
+    setTourOpen(false);
   }, [active]);
 
   useEffect(() => {
@@ -225,7 +223,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
           <TourTriggerButton
             active={tourOpen}
             onClick={() => {
-              if (active !== 'Landing') {
+              if (active !== 'Landing' && active !== 'Upload') {
                 handleNav('Landing');
                 setTimeout(() => setTourOpen(true), 80);
               } else {
@@ -428,7 +426,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
           <ArrowUp size={18}/> Top
         </button>
       </main>
-      <TourGuide open={tourOpen} onClose={() => setTourOpen(false)} />
+      <TourGuide open={tourOpen} activeStage={active} onClose={() => setTourOpen(false)} />
     </div>
   );
 }
