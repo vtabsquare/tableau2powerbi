@@ -10423,13 +10423,13 @@ button.primary:disabled {
 .phaseCenterBar {
   display: flex !important;
   flex-direction: column !important;
-  align-items: center !important;
+  align-items: stretch !important;
   gap: 10px !important;
-  padding: 12px 20px 14px !important;
+  padding: 12px 18px 14px !important;
   margin: 14px auto 0 !important;
-  max-width: 1120px !important;
-  width: calc(100% - 32px) !important;
-  background: rgba(255, 255, 255, 0.92) !important;
+  max-width: 1440px !important;
+  width: calc(100% - 48px) !important;
+  background: rgba(255, 255, 255, 0.94) !important;
   backdrop-filter: blur(10px) !important;
   border: 1px solid #e6e8f2 !important;
   border-radius: 16px !important;
@@ -10437,10 +10437,9 @@ button.primary:disabled {
 }
 
 .phaseCenterHeader {
-  display: grid !important;
-  grid-template-columns: 110px auto 110px !important;
+  display: flex !important;
   align-items: center !important;
-  gap: 16px !important;
+  justify-content: center !important;
   width: 100% !important;
 }
 
@@ -10499,9 +10498,9 @@ button.primary:disabled {
 .phaseSubstagesRow {
   display: flex !important;
   flex-direction: row !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
+  align-items: stretch !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
   flex-wrap: wrap !important;
   width: 100% !important;
 }
@@ -10510,16 +10509,17 @@ button.primary:disabled {
   display: inline-flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  gap: 7px !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  flex: 1 1 160px !important;
   width: auto !important;
-  flex: 0 0 auto !important;
   white-space: nowrap !important;
-  padding: 6px 14px !important;
-  border-radius: 999px !important;
+  padding: 9px 16px !important;
+  border-radius: 12px !important;
   border: 1px solid #e2e8f0 !important;
   background: #ffffff !important;
   color: #475569 !important;
-  font-size: 12.5px !important;
+  font-size: 13px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
   transition: all 0.15s ease !important;

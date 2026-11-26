@@ -1,7 +1,7 @@
 import { ReactNode, useState, useEffect, useRef } from 'react';
 import { 
   DatabaseZap, ShieldCheck, ArrowUp, ArrowRight, ArrowLeft, LogOut, User,
-  Menu, Lock, CheckCircle2, ChevronLeft, ChevronRight
+  Menu, Lock, CheckCircle2
 } from 'lucide-react';
 
 type Props = { 
@@ -142,8 +142,6 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
   const canGoNext = nextStage && (hasProject || ['Upload', 'Upload Models'].includes(nextStage));
 
   const activePhase = phases.find((p) => p.stages.includes(active)) || null;
-  const prevPhase = activePhase ? phases.find((p) => p.id === activePhase.id - 1) || null : null;
-  const nextPhase = activePhase ? phases.find((p) => p.id === activePhase.id + 1) || null : null;
 
   const TopNavLinks = () => (
     <>
@@ -327,36 +325,10 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
         {hasProject && activePhase && (
           <div className="phaseCenterBar">
             <div className="phaseCenterHeader">
-              {prevPhase ? (
-                <button
-                  type="button"
-                  className="phaseStepJumpBtn"
-                  onClick={() => handleNav(prevPhase.stages[0])}
-                  title={`Go back to ${prevPhase.label}: ${prevPhase.title}`}
-                >
-                  <ChevronLeft size={14} /> {prevPhase.label}
-                </button>
-              ) : (
-                <span className="phaseStepSpacer" />
-              )}
-
               <div className="phaseTitleBadge">
                 <span className="phaseNumPill">{activePhase.label} of 3</span>
                 <strong>{activePhase.title}</strong>
               </div>
-
-              {nextPhase ? (
-                <button
-                  type="button"
-                  className="phaseStepJumpBtn"
-                  onClick={() => handleNav(nextPhase.stages[0])}
-                  title={`Skip to ${nextPhase.label}: ${nextPhase.title}`}
-                >
-                  {nextPhase.label} <ChevronRight size={14} />
-                </button>
-              ) : (
-                <span className="phaseStepSpacer" />
-              )}
             </div>
 
             <div className="phaseSubstagesRow">
