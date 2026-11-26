@@ -7,14 +7,12 @@ import {
   ChevronRight,
   Code2,
   Copy,
-  Download,
   FileCode2,
   FileText,
   Filter,
   Info,
   Layers,
   Paintbrush,
-  Play,
   RefreshCw,
   ScatterChart,
   Search,
@@ -152,7 +150,7 @@ function renderJsonLine(line: string) {
   return <span className="vpJsonPunct">{line}</span>;
 }
 
-export default function VisualPlan({ project, onNavigateStage }: Props) {
+export default function VisualPlan({ project }: Props) {
   const items = useMemo(() => normalizeVisualPlan(project), [project]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -200,16 +198,6 @@ export default function VisualPlan({ project, onNavigateStage }: Props) {
     return list;
   }, [selected]);
 
-  const handleExportJson = () => {
-    const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${(project.project_name || 'powerbi').replace(/\s+/g, '_')}_visual_plan.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const handleCopyJson = async () => {
     try {
       await navigator.clipboard.writeText(jsonString);
@@ -235,28 +223,6 @@ export default function VisualPlan({ project, onNavigateStage }: Props) {
               filters, and JSON.
             </p>
           </div>
-        </div>
-        <div className="vpHeaderActions">
-          <button
-            type="button"
-            className="vpOutlineBtn"
-            onClick={() => onNavigateStage?.('Validation')}
-          >
-            <Check size={15} />
-            Validate Plan
-          </button>
-          <button type="button" className="vpOutlineBtn" onClick={handleExportJson}>
-            <Download size={15} />
-            Export Plan (JSON)
-          </button>
-          <button
-            type="button"
-            className="vpPrimaryBtn"
-            onClick={() => onNavigateStage?.('Export')}
-          >
-            <Play size={14} />
-            Generate PBIX
-          </button>
         </div>
       </div>
 
