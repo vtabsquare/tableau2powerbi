@@ -151,6 +151,12 @@ export default function TDEStrategy({
     return `${m.datasource}${m.table_name ? ` – ${m.table_name}` : (m.detected_source_path ? ` – ${m.detected_source_path.split(/[\\/]/).pop()}` : '')}`;
   }
 
+  function hasQuotesInPath(value?: string) {
+    return /["']/.test(value || '');
+  }
+
+  const hasAnyQuotedPath = mappings.some(m => hasQuotesInPath(m.target_file_path));
+
   function update(sourceId: string, key: keyof SourceMapping, value: string) {
     setMappings(mappings.map(m => m.source_id === sourceId ? { ...m, [key]: value } : m));
   }
@@ -158,6 +164,10 @@ export default function TDEStrategy({
     setMappings(mappings.filter(m => m.source_id !== sourceId));
   }
   async function save() {
+    if (hasAnyQuotedPath) {
+      setError('Quotes (" or \') are not allowed in Power BI Readable File Path. Please remove quotes before saving.');
+      return;
+    }
     setBusy(true);
     onSavingChange?.(true);
     setError(undefined);
@@ -191,7 +201,14 @@ export default function TDEStrategy({
       {section !== 'Set original source details' && <div className="summaryDetailPanel">{asRows(project, section, sourceRows as Record<string, unknown>[], filterRows as Record<string, unknown>[], tdeRows, tdeMappings, validationRows)}</div>}
       {section === 'Set original source details' && <div>
         <div className="note">Enter or correct the actual source system details that created the TDE. You can also remove unused or unnecessary tables before saving. After saving, the backend regenerates previews, datatype profiles, M queries, semantic model metadata, TDE column validation, and validation issues.</div>
-        <div className="actions tdeActions"><button className="primary" onClick={save} disabled={busy}>{busy ? 'Saving & validating...' : 'Save Source Details & Validate Columns'}</button></div>
+        <div className="actions tdeActions">
+          <button className="primary" onClick={save} disabled={busy || hasAnyQuotedPath}>
+            {busy ? 'Saving & validating...' : 'Save Source Details & Validate Columns'}
+          </button>
+          {hasAnyQuotedPath && (
+            <span className="pathBlockerHint">Remove quotes (&quot; or &apos;) from file path before saving.</span>
+          )}
+        </div>
         {!editableSources.length && <div className="empty">No original source mapping recovered yet. Add source files or provide TWB/TDS/TWBX/TDSX metadata, then re-upload or use manual source placeholder details.</div>}
         {editableSources.length > 0 && (
           <div className="tdeSplitLayout">
@@ -353,10 +370,16 @@ export default function TDEStrategy({
                     <label className="tdeFieldLabel">
                       <span className="tdeLabelTitle"><Folder size={14} /> Power BI Readable File Path</span>
                       <input
+                        className={hasQuotesInPath(selectedSource.target_file_path) ? 'pathInputBlocked' : ''}
                         value={selectedSource.target_file_path || ''}
                         onChange={e => update(selectedSource.source_id, 'target_file_path', e.target.value)}
                         placeholder="data/orders_2026.csv or C:\Data\orders.csv"
                       />
+                      {hasQuotesInPath(selectedSource.target_file_path) && (
+                        <span className="pathBlockerHint">
+                          Quotes (&quot; or &apos;) are not allowed in file paths. Enter the path without quotes.
+                        </span>
+                      )}
                     </label>
                     <label className="tdeFieldLabel">
                       <span className="tdeLabelTitle"><Crosshair size={14} /> Detected Source Path</span>

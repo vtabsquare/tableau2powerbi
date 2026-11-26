@@ -76,7 +76,17 @@ export default function SourceMapping({
     setSelectedIds([]);
   }
 
+  function hasQuotesInPath(value?: string) {
+    return /["']/.test(value || '');
+  }
+
+  const hasAnyQuotedPath = mappings.some(m => hasQuotesInPath(m.target_file_path));
+
   async function save() {
+    if (hasAnyQuotedPath) {
+      setError('Quotes (" or \') are not allowed in File Path. Please enter file paths without quotes.');
+      return;
+    }
     setBusy(true);
     onSavingChange?.(true);
     setError(undefined);
@@ -194,7 +204,8 @@ export default function SourceMapping({
             type="button"
             className="smApplyBtn"
             onClick={save}
-            disabled={busy}
+            disabled={busy || hasAnyQuotedPath}
+            title={hasAnyQuotedPath ? 'Remove quotes from File Path before applying' : undefined}
           >
             <Sparkles size={16} />
             <span>{busy ? 'Saving & regenerating...' : 'Apply & Regenerate M'}</span>
@@ -367,11 +378,15 @@ export default function SourceMapping({
                         <div className="smCompactRow">
                           <span className="smCompactKey"><Folder size={13} /> File Path</span>
                           <input
+                            className={hasQuotesInPath(m.target_file_path) ? 'pathInputBlocked' : ''}
                             value={m.target_file_path || ''}
                             onChange={e => update(m.source_id, 'target_file_path', e.target.value)}
                             placeholder="data/source.csv"
                           />
                         </div>
+                        {hasQuotesInPath(m.target_file_path) && (
+                          <div className="pathBlockerHint">Quotes (&quot; or &apos;) are not allowed in File Path.</div>
+                        )}
                         <div className="smCompactRow">
                           <span className="smCompactKey"><FolderOpen size={13} /> Detected Path</span>
                           <input
@@ -456,7 +471,7 @@ export default function SourceMapping({
                     </td>
                     <td>
                       <input
-                        className="smTableInput"
+                        className={`smTableInput ${hasQuotesInPath(m.target_file_path) ? 'pathInputBlocked' : ''}`}
                         value={m.target_file_path || m.server_name || ''}
                         onChange={e => update(m.source_id, m.target_file_path !== undefined ? 'target_file_path' : 'server_name', e.target.value)}
                         placeholder="Path or server"
@@ -521,7 +536,16 @@ export default function SourceMapping({
               <div className="tdeFormGrid2">
                 <label className="tdeFieldLabel">
                   <span className="tdeLabelTitle">File Path</span>
-                  <input value={detailSource.target_file_path || ''} onChange={e => update(detailSource.source_id, 'target_file_path', e.target.value)} />
+                  <input
+                    className={hasQuotesInPath(detailSource.target_file_path) ? 'pathInputBlocked' : ''}
+                    value={detailSource.target_file_path || ''}
+                    onChange={e => update(detailSource.source_id, 'target_file_path', e.target.value)}
+                  />
+                  {hasQuotesInPath(detailSource.target_file_path) && (
+                    <span className="pathBlockerHint">
+                      Quotes (&quot; or &apos;) are not allowed in file paths. Enter the path without quotes.
+                    </span>
+                  )}
                 </label>
                 <label className="tdeFieldLabel">
                   <span className="tdeLabelTitle">Detected Source Path</span>
@@ -568,7 +592,13 @@ export default function SourceMapping({
               >
                 <Trash2 size={14} /> Remove Table
               </button>
-              <button type="button" className="primary" style={{ width: 'auto' }} onClick={() => setDetailSourceId(null)}>
+              <button
+                type="button"
+                className="primary"
+                style={{ width: 'auto' }}
+                disabled={hasQuotesInPath(detailSource.target_file_path)}
+                onClick={() => setDetailSourceId(null)}
+              >
                 Done
               </button>
             </div>
