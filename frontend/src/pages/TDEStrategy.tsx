@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Search,
   ChevronRight,
@@ -8,6 +8,7 @@ import {
   Trash2,
   Plug,
   Folder,
+  FolderOpen,
   Crosshair,
   Server,
   Database,
@@ -92,6 +93,9 @@ export default function TDEStrategy({
   const [connectorFilter, setConnectorFilter] = useState('All Tables');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+  const [bulkFolderPath, setBulkFolderPath] = useState('');
+  const [bulkStatus, setBulkStatus] = useState<string | null>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   const PAGE_SIZE = 8;
 
   useEffect(() => setMappings(project.source_mappings || []), [project.project_id, project.source_mappings]);
@@ -157,6 +161,74 @@ export default function TDEStrategy({
 
   const hasAnyQuotedPath = mappings.some(m => hasQuotesInPath(m.target_file_path));
 
+  function applyBulkFolderPath(overrideFolder?: string, fileMap?: Map<string, string>) {
+    const raw = (overrideFolder ?? bulkFolderPath).trim();
+    if (!raw && !fileMap?.size) return;
+    if (hasQuotesInPath(raw)) {
+      setError('Quotes (" or \') are not allowed in Bulk Folder Path.');
+      return;
+    }
+    const cleanBase = raw.replace(/[\\/]+$/, '');
+    const sep = cleanBase.includes('\\') && !cleanBase.includes('/') ? '\\' : '/';
+    let updatedCount = 0;
+
+    setMappings(prev =>
+      prev.map(m => {
+        const currentPath = m.target_file_path || m.detected_source_path || '';
+        const isFileSource =
+          Boolean(currentPath) ||
+          ['CSV', 'Text', 'Excel', 'Folder', 'JSON', 'XML', 'Parquet'].includes(m.target_connector);
+        if (!isFileSource) return m;
+
+        const fileName =
+          currentPath.split(/[\\/]/).pop() ||
+          `${m.table_name || m.datasource || 'source'}.${m.target_connector.toLowerCase() === 'excel' ? 'xlsx' : 'csv'}`;
+
+        const matchedRel = fileMap?.get(fileName.toLowerCase());
+        const nextPath = cleanBase
+          ? `${cleanBase}${sep}${fileName}`
+          : matchedRel || currentPath;
+
+        if (nextPath && nextPath !== m.target_file_path) {
+          updatedCount += 1;
+          return { ...m, target_file_path: nextPath };
+        }
+        return m;
+      })
+    );
+    setError(undefined);
+    setBulkStatus(
+      updatedCount > 0
+        ? `Updated ${updatedCount} table path${updatedCount > 1 ? 's' : ''}`
+        : 'All matching table paths already up to date'
+    );
+    setTimeout(() => setBulkStatus(null), 3500);
+  }
+
+  function handleBrowseFolder(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
+    const files = Array.from(fileList);
+    const fileMap = new Map<string, string>();
+    let detectedFolder = '';
+
+    for (const f of files) {
+      fileMap.set(f.name.toLowerCase(), (f as any).webkitRelativePath || f.name);
+      if (!detectedFolder && (f as any).webkitRelativePath) {
+        const parts = String((f as any).webkitRelativePath).split('/');
+        if (parts.length > 1) {
+          detectedFolder = parts.slice(0, -1).join('/');
+        }
+      }
+    }
+
+    const nextFolder = detectedFolder || bulkFolderPath;
+    if (detectedFolder) {
+      setBulkFolderPath(detectedFolder);
+    }
+    applyBulkFolderPath(nextFolder, fileMap);
+    if (folderInputRef.current) folderInputRef.current.value = '';
+  }
+
   function update(sourceId: string, key: keyof SourceMapping, value: string) {
     setMappings(mappings.map(m => m.source_id === sourceId ? { ...m, [key]: value } : m));
   }
@@ -201,10 +273,51 @@ export default function TDEStrategy({
       {section !== 'Set original source details' && <div className="summaryDetailPanel">{asRows(project, section, sourceRows as Record<string, unknown>[], filterRows as Record<string, unknown>[], tdeRows, tdeMappings, validationRows)}</div>}
       {section === 'Set original source details' && <div>
         <div className="note">Enter or correct the actual source system details that created the TDE. You can also remove unused or unnecessary tables before saving. After saving, the backend regenerates previews, datatype profiles, M queries, semantic model metadata, TDE column validation, and validation issues.</div>
-        <div className="actions tdeActions">
+        <div className="actions tdeActions tdeTopActionBar">
           <button className="primary" data-tour="tde-save-btn" onClick={save} disabled={busy || hasAnyQuotedPath}>
             {busy ? 'Saving & validating...' : 'Save Source Details & Validate Columns'}
           </button>
+
+          <div className="tdeBulkPathBar">
+            <span className="tdeBulkLabel">
+              <Folder size={14} />
+              Bulk Folder Path
+            </span>
+            <input
+              type="text"
+              className={`tdeBulkInput ${hasQuotesInPath(bulkFolderPath) ? 'pathInputBlocked' : ''}`}
+              value={bulkFolderPath}
+              onChange={e => setBulkFolderPath(e.target.value)}
+              placeholder="e.g. Data or C:\Data\Sales (no quotes)"
+            />
+            <input
+              ref={folderInputRef}
+              type="file"
+              style={{ display: 'none' }}
+              multiple
+              {...({ webkitdirectory: '', directory: '' } as any)}
+              onChange={e => handleBrowseFolder(e.target.files)}
+            />
+            <button
+              type="button"
+              className="tdeBrowseBtn"
+              onClick={() => folderInputRef.current?.click()}
+              title="Browse a local folder to auto-fill paths"
+            >
+              <FolderOpen size={14} />
+              Browse Folder
+            </button>
+            <button
+              type="button"
+              className="tdeApplyBulkBtn"
+              disabled={!bulkFolderPath.trim() || hasQuotesInPath(bulkFolderPath)}
+              onClick={() => applyBulkFolderPath()}
+            >
+              Apply to All Tables
+            </button>
+            {bulkStatus && <span className="tdeBulkSuccess">{bulkStatus}</span>}
+          </div>
+
           {hasAnyQuotedPath && (
             <span className="pathBlockerHint">Remove quotes (&quot; or &apos;) from file path before saving.</span>
           )}
