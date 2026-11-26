@@ -435,7 +435,7 @@ export default function VisualPlan({ project }: Props) {
 
               {/* Tab 1: Visual Plan (2x2 Grid) */}
               {activeTab === 'plan' && (
-                <div className="vpPlanGrid">
+                <div className="vpPlanGrid" data-tour="vp-plan">
                   {/* Top-Left: Visual Preview (Power BI) */}
                   <div className="vpCard">
                     <div className="vpCardHead">

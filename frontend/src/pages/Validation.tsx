@@ -168,7 +168,7 @@ export default function Validation({ project }: { project: MigrationProject }) {
   return (
     <div className="page validationPage valPage">
       {/* 1. Validation & Auto-Fix Center */}
-      <section className="valAccordionCard">
+      <section className="valAccordionCard" data-tour="val-autofix">
         <button
           type="button"
           className="valAccordionHeader"

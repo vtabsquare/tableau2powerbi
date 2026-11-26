@@ -214,7 +214,7 @@ export default function PreviewTypes({ project }: { project: MigrationProject })
 
       <div className="ptSplitLayout">
         {/* LEFT SIDEBAR: SOURCE TABLES */}
-        <aside className="ptSidebar">
+        <aside className="ptSidebar" data-tour="pt-source-tables">
           <div className="ptSidebarHeader">
             <span className="ptSidebarIcon"><Database size={18} /></span>
             <h3>Source Tables ({previews.length})</h3>

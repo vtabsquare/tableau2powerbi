@@ -373,7 +373,7 @@ export default function Relationships({ project, setProject }: { project: Migrat
             <Plus size={16} />
             <span>Add relationship</span>
           </button>
-          <button type="button" className="relSaveBtn" onClick={save} disabled={busy}>
+          <button type="button" className="relSaveBtn" data-tour="rel-save-btn" onClick={save} disabled={busy}>
             <Save size={16} />
             <span>{busy ? 'Saving...' : 'Save final model'}</span>
           </button>
@@ -451,7 +451,7 @@ export default function Relationships({ project, setProject }: { project: Migrat
 
         {/* TAB 1: FULL ALL-TABLES POWER BI MODEL DIAGRAM */}
         {activeTab === 'diagram' && (
-          <div className="relDiagramGrid">
+          <div className="relDiagramGrid" data-tour="rel-model-diagram">
             {/* LEFT TABLES LIST */}
             <div className="relDiagramSidebar">
               <div className="relSideTitle">

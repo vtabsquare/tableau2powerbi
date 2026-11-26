@@ -190,6 +190,7 @@ export default function ExportPage({
                 <button
                   type="button"
                   className="primary lockedDemoBtn expGenerateBtn"
+                  data-tour="exp-generate-pkg"
                   onClick={onContactDemo}
                 >
                   <Lock size={16} />
@@ -199,6 +200,7 @@ export default function ExportPage({
                 <button
                   type="button"
                   className="expGenerateBtn"
+                  data-tour="exp-generate-pkg"
                   onClick={runExport}
                   disabled={busy}
                 >

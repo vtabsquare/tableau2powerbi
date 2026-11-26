@@ -412,7 +412,7 @@ export default function FinalTables({ project, onNavigateStage }: Props) {
       {/* Main Master-Detail Split */}
       <div className="ftSplitLayout">
         {/* Left Sidebar: Tables */}
-        <aside className="ftSidebar">
+        <aside className="ftSidebar" data-tour="ft-tables">
           <div className="ftSidebarHead">
             <div className="ftMiniBadge">
               <Table2 size={15} />

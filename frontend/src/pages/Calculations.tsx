@@ -104,7 +104,7 @@ export default function Calculations({ project }: { project: MigrationProject })
     <div className="page">
       <div className="calcSplitLayout">
         {/* LEFT SIDEBAR: CALCULATIONS LIST */}
-        <aside className="calcMasterPanel">
+        <aside className="calcMasterPanel" data-tour="calc-list">
           <div className="calcMasterHeader">
             <div className="calcMasterTitle">
               <span className="calcHeaderBadge"><Calculator size={17} /></span>
@@ -306,7 +306,7 @@ export default function Calculations({ project }: { project: MigrationProject })
             {/* TAB 1: FORMULA COMPARISON */}
             {activeTab === 'compare' && (
               <>
-                <div className="calcCompareRow">
+                <div className="calcCompareRow" data-tour="calc-formula-compare">
                   <div className="calcCodeCard">
                     <div className="calcCodeHead">
                       <span className="calcBrandDot tableau">✦</span>

@@ -81,10 +81,6 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
   }, [hasProject, active, currentIdx, maxReachedIdx]);
 
   useEffect(() => {
-    setTourOpen(false);
-  }, [active]);
-
-  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
         setProfileOpen(false);
@@ -222,24 +218,7 @@ export default function Layout({ children, active, onNav, hasProject, onLogout, 
           <div className="safeModePill"><ShieldCheck size={14}/> Safe Mode</div>
           <TourTriggerButton
             active={tourOpen}
-            onClick={() => {
-              const tourStages = [
-                'Landing',
-                'Upload',
-                'Upload Models',
-                '360 Summary',
-                'File Processing Tree',
-                'TDE Source Recovery',
-                'Source Overview',
-                'Source Mapping',
-              ];
-              if (!tourStages.includes(active)) {
-                handleNav('Landing');
-                setTimeout(() => setTourOpen(true), 80);
-              } else {
-                setTourOpen((o) => !o);
-              }
-            }}
+            onClick={() => setTourOpen((o) => !o)}
           />
           {!isDemoMode && (
             <a 

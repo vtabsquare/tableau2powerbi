@@ -200,6 +200,168 @@ const SOURCE_MAPPING_TOUR_STEPS: TourStep[] = [
   },
 ];
 
+const PREVIEW_TYPES_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'pt-source-tables',
+    selector: '[data-tour="pt-source-tables"]',
+    title: '1. Source Tables',
+    description:
+      'Select any source table on the left to inspect its inferred column datatypes, null counts, keys, and sample preview rows.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '2. Proceed to Relationships',
+    description:
+      'Click Proceed to Relationships to review the Power BI star schema and table joins.',
+  },
+];
+
+const RELATIONSHIPS_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'rel-model-diagram',
+    selector: '[data-tour="rel-model-diagram"]',
+    title: '1. Review the Model Diagram',
+    description:
+      'Inspect all final Power BI tables and their connecting relationships in the interactive model diagram.',
+  },
+  {
+    id: 'rel-save-btn',
+    selector: '[data-tour="rel-save-btn"]',
+    title: '2. Save Final Model',
+    description:
+      'Click Save final model to persist any relationship edits, cardinality, or cross-filter updates.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '3. Proceed to Calculations',
+    description:
+      'Click Proceed to Calculations to review Tableau-to-DAX formula translations.',
+  },
+];
+
+const CALCULATIONS_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'calc-list',
+    selector: '[data-tour="calc-list"]',
+    title: '1. Calculations',
+    description:
+      'Browse and search all converted calculated columns and measures along with their type and confidence score.',
+  },
+  {
+    id: 'calc-formula-compare',
+    selector: '[data-tour="calc-formula-compare"]',
+    title: '2. Formula Comparison',
+    description:
+      'Compare the Original Tableau Formula side-by-side with the Generated DAX / Review Expression.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '3. Proceed to M Query',
+    description:
+      'Click Proceed to M Query to inspect the generated Power Query (M) scripts.',
+  },
+];
+
+const MQUERY_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'mq-script',
+    selector: '[data-tour="mq-script"]',
+    title: '1. M Query Script',
+    description:
+      'Review, format, copy, or download the generated Power Query (M) script for each source table.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '2. Proceed to Final Tables',
+    description:
+      'Click Proceed to Final Tables to review the final business tables, columns, and measures.',
+  },
+];
+
+const FINAL_TABLES_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'ft-tables',
+    selector: '[data-tour="ft-tables"]',
+    title: '1. Tables',
+    description:
+      'Select any business table to inspect its final Power BI columns, measures, lineage, and data preview.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '2. Proceed to Visual Plan',
+    description:
+      'Click Proceed to Visual Plan to review how Tableau worksheets map to Power BI visuals.',
+  },
+];
+
+const VISUAL_PLAN_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'vp-plan',
+    selector: '[data-tour="vp-plan"]',
+    title: '1. Visual Plan',
+    description:
+      'Inspect the Power BI visual preview, configuration summary, Safe Mode Visual JSON, and validation notes.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '2. Proceed to Validation',
+    description:
+      'Click Proceed to Validation to review all validation checks and reconciliation steps.',
+  },
+];
+
+const VALIDATION_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'val-autofix',
+    selector: '[data-tour="val-autofix"]',
+    title: '1. Validation & Auto-Fix Center',
+    description:
+      'Filter and review validation checks, severity levels, and recommended fixes before exporting.',
+  },
+  {
+    id: 'proceed-next',
+    selector: '[data-tour="proceed-next"]',
+    title: '2. Proceed to Export',
+    description:
+      'Click Proceed to Export to generate and download your Power BI migration package.',
+  },
+];
+
+const EXPORT_TOUR_STEPS: TourStep[] = [
+  {
+    id: 'exp-generate-pkg',
+    selector: '[data-tour="exp-generate-pkg"]',
+    title: '1. Generate Export Package',
+    description:
+      'Click Generate Export Package to build and download your Power BI PBIP/TMDL semantic model, M queries, DAX, and validation reports.',
+  },
+];
+
+const STAGE_STEPS_MAP: Record<string, TourStep[]> = {
+  Landing: LANDING_TOUR_STEPS,
+  Upload: UPLOAD_TOUR_STEPS,
+  'Upload Models': UPLOAD_MODELS_TOUR_STEPS,
+  '360 Summary': SUMMARY_TOUR_STEPS,
+  'File Processing Tree': FILE_TREE_TOUR_STEPS,
+  'TDE Source Recovery': TDE_RECOVERY_TOUR_STEPS,
+  'Source Overview': SOURCE_OVERVIEW_TOUR_STEPS,
+  'Source Mapping': SOURCE_MAPPING_TOUR_STEPS,
+  'Preview & Types': PREVIEW_TYPES_TOUR_STEPS,
+  Relationships: RELATIONSHIPS_TOUR_STEPS,
+  Calculations: CALCULATIONS_TOUR_STEPS,
+  'M Query': MQUERY_TOUR_STEPS,
+  'Final Tables': FINAL_TABLES_TOUR_STEPS,
+  'Visual Plan': VISUAL_PLAN_TOUR_STEPS,
+  Validation: VALIDATION_TOUR_STEPS,
+  Export: EXPORT_TOUR_STEPS,
+};
+
 type Props = {
   open: boolean;
   activeStage: string;
@@ -217,22 +379,11 @@ export default function TourGuide({ open, activeStage, onClose }: Props) {
   const [stepIdx, setStepIdx] = useState(0);
   const [targetRect, setTargetRect] = useState<RectBox | null>(null);
 
-  const steps =
-    activeStage === 'Upload'
-      ? UPLOAD_TOUR_STEPS
-      : activeStage === 'Upload Models'
-      ? UPLOAD_MODELS_TOUR_STEPS
-      : activeStage === '360 Summary'
-      ? SUMMARY_TOUR_STEPS
-      : activeStage === 'File Processing Tree'
-      ? FILE_TREE_TOUR_STEPS
-      : activeStage === 'TDE Source Recovery'
-      ? TDE_RECOVERY_TOUR_STEPS
-      : activeStage === 'Source Overview'
-      ? SOURCE_OVERVIEW_TOUR_STEPS
-      : activeStage === 'Source Mapping'
-      ? SOURCE_MAPPING_TOUR_STEPS
-      : LANDING_TOUR_STEPS;
+  useEffect(() => {
+    setStepIdx(0);
+  }, [activeStage]);
+
+  const steps = STAGE_STEPS_MAP[activeStage] || LANDING_TOUR_STEPS;
   const safeStepIdx = Math.min(stepIdx, steps.length - 1);
   const step = steps[safeStepIdx];
 
@@ -263,15 +414,6 @@ export default function TourGuide({ open, activeStage, onClose }: Props) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    const handleTargetClick = () => {
-      if (step.id === 'new-migration' || step.id === 'upload-analyze' || step.id === 'proceed-next') {
-        onClose();
-      }
-    };
-    if (el && (step.id === 'new-migration' || step.id === 'upload-analyze' || step.id === 'proceed-next')) {
-      el.addEventListener('click', handleTargetClick);
-    }
-
     const t1 = setTimeout(measure, 120);
     const t2 = setTimeout(measure, 420);
     window.addEventListener('resize', measure);
@@ -280,13 +422,10 @@ export default function TourGuide({ open, activeStage, onClose }: Props) {
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      if (el && (step.id === 'new-migration' || step.id === 'upload-analyze' || step.id === 'proceed-next')) {
-        el.removeEventListener('click', handleTargetClick);
-      }
       window.removeEventListener('resize', measure);
       window.removeEventListener('scroll', measure, true);
     };
-  }, [open, step.id, step.selector, onClose]);
+  }, [open, activeStage, step.id, step.selector]);
 
   if (!open) return null;
 

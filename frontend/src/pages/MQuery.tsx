@@ -282,7 +282,7 @@ export default function MQuery({ project, isDemoMode, onContactDemo }: Props) {
             {/* TAB 1: M QUERY SCRIPT */}
             {activeTab === 'script' && (
               <>
-                <div className="mqEditorShell">
+                <div className="mqEditorShell" data-tour="mq-script">
                   <div className="mqEditorToolbar">
                     <button
                       type="button"
