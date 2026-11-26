@@ -17,6 +17,8 @@ import {
   Code2,
   Info,
   ListFilter,
+  ShieldCheck,
+  X,
 } from 'lucide-react';
 import { Badge, Card, Metric } from '../components/Cards';
 import DataTable from '../components/DataTable';
@@ -95,6 +97,7 @@ export default function TDEStrategy({
   const [page, setPage] = useState(1);
   const [bulkFolderPath, setBulkFolderPath] = useState('');
   const [bulkStatus, setBulkStatus] = useState<string | null>(null);
+  const [browseSecurityNote, setBrowseSecurityNote] = useState<string | null>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const PAGE_SIZE = 8;
 
@@ -225,6 +228,9 @@ export default function TDEStrategy({
     if (detectedFolder) {
       setBulkFolderPath(detectedFolder);
     }
+    setBrowseSecurityNote(
+      `Your full local directory path is kept private by your browser for security reasons, so only "${detectedFolder || 'the selected folder'}" is shown. The generated PBIP package will still work, or you can paste your full local path from File Explorer (without quotes) and click Apply to All Tables.`
+    );
     applyBulkFolderPath(nextFolder, fileMap);
     if (folderInputRef.current) folderInputRef.current.value = '';
   }
@@ -322,6 +328,20 @@ export default function TDEStrategy({
             <span className="pathBlockerHint">Remove quotes (&quot; or &apos;) from file path before saving.</span>
           )}
         </div>
+        {browseSecurityNote && (
+          <div className="tdeSecurityNotice" role="status">
+            <ShieldCheck size={17} />
+            <span>{browseSecurityNote}</span>
+            <button
+              type="button"
+              className="tdeNoticeClose"
+              onClick={() => setBrowseSecurityNote(null)}
+              aria-label="Dismiss notice"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        )}
         {!editableSources.length && <div className="empty">No original source mapping recovered yet. Add source files or provide TWB/TDS/TWBX/TDSX metadata, then re-upload or use manual source placeholder details.</div>}
         {editableSources.length > 0 && (
           <div className="tdeSplitLayout">
