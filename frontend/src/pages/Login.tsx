@@ -16,6 +16,7 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [resetPopupOpen, setResetPopupOpen] = useState(false);
 
   // 1. Submit existing user login
   async function submitLogin(e: FormEvent) {
@@ -89,10 +90,24 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
     setError('');
     setSuccessMsg('');
     try {
-      await createPassword(regEmail, otp, newPassword);
+      const res = (await createPassword(regEmail, otp, newPassword)) as {
+        authenticated: boolean;
+        display_name: string;
+        role: string;
+        message: string;
+        token?: string;
+        can_use_demo_flow?: boolean;
+      };
       sessionStorage.setItem('t2pbi_authenticated', 'true');
       sessionStorage.setItem('t2pbi_user_email', regEmail.trim().toLowerCase());
-      onAuthenticated();
+      if (res.token) {
+        sessionStorage.setItem('t2pbi_token', res.token);
+      }
+      sessionStorage.setItem('t2pbi_can_demo', res.can_use_demo_flow ? 'true' : 'false');
+      setResetPopupOpen(true);
+      setTimeout(() => {
+        onAuthenticated();
+      }, 1800);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -393,6 +408,65 @@ export default function Login({ onAuthenticated }: { onAuthenticated: () => void
             {busy ? 'Saving & Signing in...' : (otpPurpose === 'reset' ? 'Update Password & Enter Workbench' : 'Set Password & Enter Workbench')}
           </button>
         </form>
+      )}
+
+      {resetPopupOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            background: 'rgba(15, 23, 42, 0.55)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 16,
+          }}
+        >
+          <div
+            style={{
+              background: '#ffffff',
+              borderRadius: 16,
+              padding: '28px 26px',
+              maxWidth: 380,
+              width: '100%',
+              textAlign: 'center',
+              boxShadow: '0 24px 48px rgba(15, 23, 42, 0.25)',
+              border: '1px solid #e2e8f0',
+            }}
+          >
+            <div
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: '999px',
+                background: '#dcfce7',
+                color: '#16a34a',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: 14,
+              }}
+            >
+              <CheckCircle2 size={28} />
+            </div>
+            <h3 style={{ margin: '0 0 8px', fontSize: 19, fontWeight: 800, color: '#0f172a' }}>
+              {otpPurpose === 'reset' ? 'Password Reset Successfully!' : 'Account Created Successfully!'}
+            </h3>
+            <p style={{ margin: '0 0 18px', fontSize: 13.5, color: '#475569', lineHeight: 1.5 }}>
+              Your password for <b>{regEmail}</b> has been updated. Entering the workbench...
+            </p>
+            <button
+              type="button"
+              className="primary"
+              style={{ width: '100%', padding: '10px 16px' }}
+              onClick={onAuthenticated}
+            >
+              Enter Workbench →
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
